@@ -8,3 +8,4 @@ Route::get('/', [EmissionController::class, 'index']);
 
 // 2. Tetap sediakan rute /progress sebagai cadangan
 Route::get('/progress', [EmissionController::class, 'index'])->name('progress');
+Route::post('/progress', [EmissionController::class, 'store'])->name('progress.store');
