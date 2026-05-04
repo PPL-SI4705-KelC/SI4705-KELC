@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -20,8 +21,14 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
+        'role',
+        'xp',
+        'level',
+        'avatar',
+        'bio',
     ];
 
     /**
@@ -44,6 +51,86 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'xp' => 'integer',
+            'level' => 'integer',
         ];
+    }
+
+    // ── Role Helpers ─────────────────────────────────────────
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
+
+    // ── Climate Journey Level Name ──────────────────────────
+
+    public function getJourneyTitleAttribute(): string
+    {
+        return match (true) {
+            $this->level >= 6 => 'Planet Guardian',
+            $this->level >= 5 => 'Climate Champion',
+            $this->level >= 4 => 'Climate Advocate',
+            $this->level >= 3 => 'Eco Warrior',
+            $this->level >= 2 => 'Green Starter',
+            default => 'Eco Beginner',
+        };
+    }
+
+    // ── Relationships ────────────────────────────────────────
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(Activity::class);
+    }
+
+    public function emissions(): HasMany
+    {
+        return $this->hasMany(Emission::class);
+    }
+
+    public function xpLogs(): HasMany
+    {
+        return $this->hasMany(XpLog::class);
+    }
+
+    public function quizAttempts(): HasMany
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
+    public function blogs(): HasMany
+    {
+        return $this->hasMany(Blog::class);
+    }
+
+    public function communities(): BelongsToMany
+    {
+        return $this->belongsToMany(Community::class)->withPivot('role')->withTimestamps();
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function likedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'post_likes')->withTimestamps();
+    }
+
+    public function savedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'post_saves')->withTimestamps();
     }
 }
