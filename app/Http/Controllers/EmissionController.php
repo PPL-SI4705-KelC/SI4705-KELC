@@ -28,10 +28,20 @@ class EmissionController extends Controller
         // 1. Query Riwayat: Pagination 10 data & urutkan dari terbaru
         $carbon_footprints = $query->orderBy('recorded_at', 'desc')->paginate(10)->withQueryString();
 
-        // 2. Data Visualisasi (Chart.js): 7 hari terakhir
-        $sevenDaysAgo = Carbon::now()->subDays(6)->toDateString(); // 7 hari terakhir (termasuk hari ini)
+        // Ambil tanggal target untuk referensi Chart dan SDG Score (default hari ini)
+        $targetDateStr = $request->filled('filter_date') ? $request->filter_date : Carbon::today()->toDateString();
+        $targetDateObj = Carbon::parse($targetDateStr);
 
-        $chartQuery = EmissionRecord::where('user_id', $userId)->where('recorded_at', '>=', $sevenDaysAgo);
+        // Ambil range grafik dari request (opsi: 1 hari atau 7 hari), default: 7
+        $chartRange = $request->input('chart_range', 7);
+        $daysToSub = max(0, $chartRange - 1); // Jika range 1, maka mundur 0 hari. Jika 7, mundur 6 hari.
+
+        // 2. Data Visualisasi (Chart.js): N hari ke belakang dari tanggal target
+        $rangeStart = (clone $targetDateObj)->subDays($daysToSub)->toDateString();
+
+        $chartQuery = EmissionRecord::where('user_id', $userId)
+            ->whereBetween('recorded_at', [$rangeStart, $targetDateStr]);
+            
         if ($request->filled('filter_activity') && $request->filter_activity !== '') {
             $chartQuery->where('activity_type', $request->filter_activity);
         }
@@ -44,40 +54,40 @@ class EmissionController extends Controller
         $chartLabels = [];
         $chartData = [];
 
-        // Looping 7 hari terakhir agar data tidak "bolong" di chart
-        for ($i = 6; $i >= 0; $i--) {
-            $dateStr = Carbon::now()->subDays($i)->toDateString();
+        // Looping N hari terakhir (berakhir di tanggal target) agar data tidak "bolong" di chart
+        for ($i = $daysToSub; $i >= 0; $i--) {
+            $dateStr = (clone $targetDateObj)->subDays($i)->toDateString();
             $chartLabels[] = $dateStr;
             
             $dataForDate = $chartDataRaw->firstWhere('date', $dateStr);
             $chartData[] = $dataForDate ? (float) $dataForDate->total_emission : 0;
         }
 
-        // 3. SDG Impact Score (Skala 1-100)
-        // Hitung total dan hari aktif untuk mendapatkan rata-rata sesuai filter aktivitas
-        $baseQuery = EmissionRecord::where('user_id', $userId);
-        if ($request->filled('filter_activity') && $request->filter_activity !== '') {
-            $baseQuery->where('activity_type', $request->filter_activity);
-        }
-
-        $totalEmissions = (clone $baseQuery)->sum('carbon_impact');
-        $daysActive = (clone $baseQuery)->distinct('recorded_at')->count('recorded_at') ?: 1;
-        $dailyAverage = $totalEmissions / $daysActive;
-
-        // Emisi pada hari yang difilter (atau hari ini jika tidak ada filter)
-        $targetDate = $request->filled('filter_date') ? $request->filter_date : Carbon::today()->toDateString();
+        // 3. SDG Impact Score (Skala 0-100)
         
-        $todayEmission = (clone $baseQuery)
-            ->whereDate('recorded_at', $targetDate)
-            ->sum('carbon_impact');
-
-        // Logic SDG Score: semakin rendah emisi hari ini dibanding rata-rata, semakin tinggi skornya
-        if ($dailyAverage > 0) {
-            $ratio = $todayEmission / $dailyAverage;
-            $sdg_score = max(1, min(100, round(100 - ($ratio * 50))));
+        if ($chartRange == 1) {
+            // Evaluasi 1 Hari
+            $e_total = EmissionRecord::where('user_id', $userId)
+                ->whereDate('recorded_at', $targetDateStr)
+                ->sum('carbon_impact');
+            $evalText = "Evaluasi Harian: " . $targetDateObj->format('d M Y');
         } else {
-            $sdg_score = 100; // Jika tidak ada riwayat emisi
+            // Evaluasi Tren 7 Hari (Gunakan Rata-Rata Harian)
+            $total7Days = EmissionRecord::where('user_id', $userId)
+                ->whereBetween('recorded_at', [$rangeStart, $targetDateStr])
+                ->sum('carbon_impact');
+            
+            $e_total = $total7Days / 7; // E_total dalam rumus proposal adalah basis harian
+            $startDateObj = (clone $targetDateObj)->subDays(6);
+            $evalText = "Evaluasi 7 Hari: " . $startDateObj->format('d M') . " - " . $targetDateObj->format('d M Y');
         }
+
+        // Rumus Proposal: (1 - ((E_total - 5) / (5 - (-5)))) * 100
+        // Penyebut: (5 - (-5)) = 10
+        $raw_sdg_score = (1 - (($e_total - 5) / 10)) * 100;
+
+        // Batasi (clamp) skor agar tidak tembus batas 0 - 100
+        $sdg_score = max(0, min(100, round($raw_sdg_score)));
 
         // Kategorisasi SDG Score (Humanized)
         if ($sdg_score >= 70) {
@@ -94,7 +104,7 @@ class EmissionController extends Controller
             $sdg_color    = 'danger'; 
         }
 
-        return view('progress', compact('carbon_footprints', 'chartLabels', 'chartData', 'sdg_score', 'sdg_category', 'sdg_message', 'sdg_color'));
+        return view('progress', compact('carbon_footprints', 'chartLabels', 'chartData', 'sdg_score', 'sdg_category', 'sdg_message', 'sdg_color', 'evalText'));
     }
 
     public function store(Request $request)
