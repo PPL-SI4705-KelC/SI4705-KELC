@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             QuizSeeder::class,
             CommunitySeeder::class,
+            JourneyTestSeeder::class,
         ]);
     }
 }
