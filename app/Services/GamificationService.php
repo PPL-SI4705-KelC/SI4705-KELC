@@ -7,6 +7,8 @@ use App\Models\XpLog;
 
 class GamificationService
 {
+    // XP thresholds to reach each level (index = level - 1)
+    private const LEVEL_THRESHOLDS = [0, 1000, 2000, 3000, 4000, 5000];
     private const XP_PER_LEVEL = 1000;
 
     /**
@@ -51,7 +53,15 @@ class GamificationService
      */
     public function calculateLevel(int $xp): int
     {
-        return max(1, intdiv($xp, self::XP_PER_LEVEL) + 1);
+        $level = 1;
+        foreach (self::LEVEL_THRESHOLDS as $index => $threshold) {
+            if ($xp >= $threshold) {
+                $level = $index + 1;
+            } else {
+                break;
+            }
+        }
+        return $level;
     }
 
     /**
@@ -59,7 +69,11 @@ class GamificationService
      */
     public function xpToNextLevel(User $user): int
     {
-        $nextLevelXp = $user->level * self::XP_PER_LEVEL;
+        $nextLevelIndex = $user->level; // 0-indexed into LEVEL_THRESHOLDS
+        if ($nextLevelIndex >= count(self::LEVEL_THRESHOLDS)) {
+            return 0; // Max level reached
+        }
+        $nextLevelXp = self::LEVEL_THRESHOLDS[$nextLevelIndex];
         return max(0, $nextLevelXp - $user->xp);
     }
 
@@ -68,9 +82,20 @@ class GamificationService
      */
     public function levelProgress(User $user): float
     {
-        $currentLevelStart = ($user->level - 1) * self::XP_PER_LEVEL;
+        $currentLevelIndex = $user->level - 1;
+        $currentLevelStart = self::LEVEL_THRESHOLDS[$currentLevelIndex] ?? 0;
+        $nextLevelIndex = $user->level;
+
+        // If max level, show 100%
+        if ($nextLevelIndex >= count(self::LEVEL_THRESHOLDS)) {
+            return 100.0;
+        }
+
+        $nextLevelStart = self::LEVEL_THRESHOLDS[$nextLevelIndex];
+        $range = $nextLevelStart - $currentLevelStart;
         $progress = $user->xp - $currentLevelStart;
-        return round(($progress / self::XP_PER_LEVEL) * 100, 1);
+
+        return round(($progress / $range) * 100, 1);
     }
 
     /**

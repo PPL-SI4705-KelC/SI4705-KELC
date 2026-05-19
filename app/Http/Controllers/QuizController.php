@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Services\QuizService;
+use App\Models\QuizAttempt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class QuizController extends Controller
 {
@@ -21,12 +23,21 @@ class QuizController extends Controller
 
         if ($this->quizService->hasAttemptedToday($user)) {
             $todayAttempt = $user->quizAttempts()
-                ->where('attempt_date', now()->toDateString())
+                ->whereDate('attempt_date', now()->toDateString())
+                ->latest()
                 ->first();
+
+            // Guard: jika attempt tidak ditemukan (edge case), tampilkan quiz
+            if (!$todayAttempt) {
+                $questions = $this->quizService->getTodayQuestions();
+                return empty($questions)
+                    ? view('quiz.empty')
+                    : view('quiz.index', compact('questions'));
+            }
 
             return view('quiz.result', [
                 'attempt' => $todayAttempt,
-                'stats' => $this->quizService->getUserStats($user),
+                'stats'   => $this->quizService->getUserStats($user),
             ]);
         }
 
@@ -53,7 +64,7 @@ class QuizController extends Controller
 
         $request->validate([
             'question_ids' => ['required', 'array'],
-            'answers' => ['required', 'array'],
+            'answers'      => ['required', 'array'],
         ]);
 
         $attempt = $this->quizService->submitQuiz(
@@ -62,7 +73,55 @@ class QuizController extends Controller
             $request->input('answers')
         );
 
+        // Langsung render result dengan data attempt yang baru dibuat
+        // (hindari re-query yang bisa gagal karena timezone / cache)
+        return view('quiz.result', [
+            'attempt' => $attempt,
+            'stats'   => $this->quizService->getUserStats($user),
+        ]);
+    }
+
+    /**
+     * [DEV ONLY] Reset today's quiz attempt so you can re-take the quiz.
+     * Only available when APP_ENV=local.
+     */
+    public function devResetToday()
+    {
+        abort_unless(app()->environment('local'), 403, 'Only available in local environment.');
+
+        $user = Auth::user();
+
+        $deleted = QuizAttempt::where('user_id', $user->id)
+            ->where('attempt_date', Carbon::today())
+            ->delete();
+
         return redirect()->route('quiz.index')
-            ->with('success', "Quiz completed! You scored {$attempt->correct_count}/3 and earned {$attempt->xp_earned} XP!");
+            ->with('success', $deleted
+                ? '✅ [DEV] Today\'s quiz attempt has been reset. You can retake the quiz!'
+                : '⚠️ [DEV] No attempt found for today.');
+    }
+
+    /**
+     * [DEV ONLY] Simulate "tomorrow" by moving today's attempt to yesterday,
+     * so you can test if the quiz is available again the next day.
+     */
+    public function devSimulateTomorrow()
+    {
+        abort_unless(app()->environment('local'), 403, 'Only available in local environment.');
+
+        $user = Auth::user();
+
+        $attempt = QuizAttempt::where('user_id', $user->id)
+            ->where('attempt_date', Carbon::today())
+            ->first();
+
+        if ($attempt) {
+            $attempt->update(['attempt_date' => Carbon::yesterday()]);
+            return redirect()->route('quiz.index')
+                ->with('success', '✅ [DEV] Quiz attempt moved to yesterday. Refresh to take today\'s quiz!');
+        }
+
+        return redirect()->route('quiz.index')
+            ->with('info', '⚠️ [DEV] No attempt found for today to simulate.');
     }
 }

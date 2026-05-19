@@ -36,6 +36,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
     Route::post('/quiz', [QuizController::class, 'submit'])->name('quiz.submit');
 
+    // [DEV ONLY] Quiz testing helpers — protected in controller by APP_ENV check
+    Route::get('/quiz/dev/reset-today', [QuizController::class, 'devResetToday'])->name('quiz.dev.reset');
+    Route::get('/quiz/dev/simulate-tomorrow', [QuizController::class, 'devSimulateTomorrow'])->name('quiz.dev.tomorrow');
+
     // Blogs
     Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
     Route::get('/blogs/my', [BlogController::class, 'myBlogs'])->name('blogs.my');
