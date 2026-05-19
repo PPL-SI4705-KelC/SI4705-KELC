@@ -29,13 +29,34 @@ class DashboardController extends Controller
             ->orderBy('emission_date')
             ->get();
 
-        // Total stats
         $totalEmissions = $user->emissions()->sum('total_emission');
         $avgEmission = $user->emissions()->avg('total_emission') ?? 0;
         $totalActivities = $user->activities()->count();
 
-        // SDG Score (latest)
-        $sdgScore = $latestEmission?->sdg_score ?? 0;
+        // Calculate Trend Data
+        $current7Days = $user->emissions()
+            ->where('emission_date', '>=', Carbon::now()->subDays(7))
+            ->sum('total_emission');
+        $previous7Days = $user->emissions()
+            ->whereBetween('emission_date', [Carbon::now()->subDays(14), Carbon::now()->subDays(7)])
+            ->sum('total_emission');
+            
+        $trendPercentage = 0;
+        $trendDirection = 'same';
+        if ($previous7Days > 0) {
+            $trendPercentage = (($current7Days - $previous7Days) / $previous7Days) * 100;
+            $trendDirection = $trendPercentage > 0 ? 'up' : ($trendPercentage < 0 ? 'down' : 'same');
+        } elseif ($current7Days > 0) {
+            $trendPercentage = 100;
+            $trendDirection = 'up';
+        }
+        
+        $trendPercentage = abs(round($trendPercentage, 1));
+
+        // SDG Score (average / accumulated)
+        $sdgScore = $user->emissions()->count() > 0 
+            ? round($user->emissions()->avg('sdg_score'), 1) 
+            : 0;
 
         $transportEmission = $user->emissions()->sum('transport_emission');
         $energyEmission = $user->emissions()->sum('energy_emission');
@@ -87,7 +108,9 @@ class DashboardController extends Controller
             'pendingBlogs',
             'transportEmission',
             'energyEmission',
-            'foodEmission'
+            'foodEmission',
+            'trendPercentage',
+            'trendDirection'
         ));
     }
 }
