@@ -31,22 +31,12 @@
         $cPct = $dailyKg > 0 ? ($cKg / $dailyKg) * 100 : 0;
     @endphp
 
-    <!-- Background Decorative Elements using Inline Styles to prevent Tailwind JIT compilation issues -->
-    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; pointer-events: none; z-index: 0;">
-        <!-- Top left blur -->
-        <div style="position: absolute; top: -100px; left: -100px; width: 400px; height: 400px; border-radius: 50%; background-color: rgba(209, 250, 229, 0.6); filter: blur(60px);"></div>
-        <!-- Bottom right blur -->
-        <div style="position: absolute; bottom: -150px; right: -100px; width: 500px; height: 500px; border-radius: 50%; background-color: rgba(254, 243, 199, 0.5); filter: blur(80px);"></div>
-        <!-- Center abstract subtle blob -->
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 600px; background-color: rgba(239, 246, 255, 0.4); filter: blur(100px);"></div>
-    </div>
-
-    <!-- Container with Alpine for Entrance Animations -->
-    <div x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 100)" class="relative z-10 min-h-screen text-center pb-20 pt-10" style="margin-top: -2rem;">
-        <div class="mx-auto px-4 sm:px-6 lg:px-8" style="max-width: 72rem;">
+    <!-- Use a full-width white background layout to match the clean mockup -->
+    <div class="min-h-screen bg-white text-center pb-20 pt-10" style="margin-top: -2rem;">
+        <div class="max-w-4xl mx-auto px-4">
             
             <!-- Icon Warning / Success -->
-            <div class="flex justify-center mb-6 transition-all duration-700 transform" :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
+            <div class="flex justify-center mb-6">
                 @if($isOver)
                     <div class="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center shadow-[0_10px_20px_rgba(239,68,68,0.3)]">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -198,6 +188,7 @@
                     </div>
                 </div>
             </div>
+<<<<<<< HEAD
             <!-- End of Cards Grid -->
 
             <!-- Action Buttons -->
@@ -213,6 +204,21 @@
                 </a>
             </div>
 
+=======
+
+            <div class="mt-16 flex flex-col sm:flex-row justify-center items-center gap-4 no-print">
+                <button onclick="window.print()" class="inline-flex items-center justify-center gap-3 bg-white border-2 border-[#2D5A4C] text-[#2D5A4C] hover:bg-gray-50 px-10 py-4 rounded-xl font-black text-lg transition-all shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:-translate-y-1 w-full sm:w-auto cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    Print / Save PDF
+                </button>
+                
+                <a href="{{ route('dashboard') }}" class="inline-flex items-center justify-center gap-3 bg-[#2D5A4C] hover:bg-[#1a382e] text-white px-10 py-4 rounded-xl font-black text-lg transition-all shadow-[0_8px_20px_rgba(45,90,76,0.3)] hover:shadow-[0_12px_25px_rgba(45,90,76,0.4)] hover:-translate-y-1 w-full sm:w-auto">
+                    Return to Dashboard
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+            </div>
+            
+>>>>>>> 23cf5aa1bc2c2abe1c6339f71e906666f4fde41d
         </div>
     </div>
 </x-calculator-layout>

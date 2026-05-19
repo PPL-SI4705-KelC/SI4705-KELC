@@ -2,18 +2,7 @@
 
 namespace App\Models;
 
-<<<<<<< HEAD
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
-=======
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,15 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
->>>>>>> 14f647be00457c2be938ca3977220a2674dc60a5
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-<<<<<<< HEAD
-=======
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -57,7 +43,6 @@ class User extends Authenticatable
     ];
 
     /**
->>>>>>> 14f647be00457c2be938ca3977220a2674dc60a5
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -67,10 +52,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-<<<<<<< HEAD
-        ];
-    }
-=======
             'xp' => 'integer',
             'level' => 'integer',
         ];
@@ -153,5 +134,4 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Post::class, 'post_saves')->withTimestamps();
     }
->>>>>>> 14f647be00457c2be938ca3977220a2674dc60a5
 }
