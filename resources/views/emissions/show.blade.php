@@ -188,6 +188,23 @@
                     </div>
                 </div>
             </div>
+<<<<<<< HEAD
+            <!-- End of Cards Grid -->
+
+            <!-- Action Buttons -->
+            <div class="mt-16 flex flex-col sm:flex-row justify-center items-center gap-5 no-print transition-all duration-700 delay-500 transform" :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
+                <button onclick="window.print()" style="width: 260px;" class="inline-flex items-center justify-center gap-3 bg-white border-2 border-[#2D5A4C] text-[#2D5A4C] hover:bg-gray-50 px-8 py-4 rounded-xl font-bold text-base transition-all shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:-translate-y-1 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    Print / Save PDF
+                </button>
+
+                <a href="{{ route('dashboard') }}" style="width: 260px;" class="inline-flex items-center justify-center gap-3 bg-[#2D5A4C] border-2 border-transparent hover:bg-[#1a382e] text-white px-8 py-4 rounded-xl font-bold text-base transition-all shadow-[0_8px_20px_rgba(45,90,76,0.3)] hover:shadow-[0_12px_25px_rgba(45,90,76,0.4)] hover:-translate-y-1">
+                    Go to Dashboard
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+            </div>
+
+=======
 
             <div class="mt-16 flex flex-col sm:flex-row justify-center items-center gap-4 no-print">
                 <button onclick="window.print()" class="inline-flex items-center justify-center gap-3 bg-white border-2 border-[#2D5A4C] text-[#2D5A4C] hover:bg-gray-50 px-10 py-4 rounded-xl font-black text-lg transition-all shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:-translate-y-1 w-full sm:w-auto cursor-pointer">
@@ -201,6 +218,7 @@
                 </a>
             </div>
             
+>>>>>>> 23cf5aa1bc2c2abe1c6339f71e906666f4fde41d
         </div>
     </div>
 </x-calculator-layout>

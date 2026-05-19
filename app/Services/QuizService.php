@@ -74,7 +74,7 @@ class QuizService
             }
         }
 
-        $xpEarned = $correctCount * self::XP_PER_CORRECT;
+        $xpEarned = $correctCount * self::XP_PER_CORRECT;  
 
         $attempt = QuizAttempt::create([
             'user_id' => $user->id,
