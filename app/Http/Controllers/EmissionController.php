@@ -106,9 +106,18 @@ class EmissionController extends Controller
     {
         $user = Auth::user();
 
-        // Chart data: last 30 days emissions for Carbon Trend
+        // Chart date range filter (defaults to last 7 days)
+        $chartStart = $request->filled('chart_start')
+            ? Carbon::parse($request->chart_start)->startOfDay()
+            : Carbon::now('Asia/Jakarta')->subDays(7)->startOfDay();
+
+        $chartEnd = $request->filled('chart_end')
+            ? Carbon::parse($request->chart_end)->endOfDay()
+            : Carbon::now('Asia/Jakarta')->endOfDay();
+
+        // Chart data: emissions for Carbon Trend within selected range
         $chartData = $user->emissions()
-            ->where('emission_date', '>=', Carbon::now('Asia/Jakarta')->subDays(30))
+            ->whereBetween('emission_date', [$chartStart, $chartEnd])
             ->orderBy('emission_date')
             ->get(['emission_date', 'transport_emission', 'consumption_emission', 'energy_emission', 'total_emission', 'sdg_score']);
 
@@ -202,7 +211,7 @@ class EmissionController extends Controller
 
         return view('emissions.index', compact(
             'chartData', 'avgEmission', 'avgSdg', 'perfStatus', 'perfLabel', 'perfMessage',
-            'sevenDayStart', 'sevenDayEnd', 'paginatedRows'
+            'sevenDayStart', 'sevenDayEnd', 'paginatedRows', 'chartStart', 'chartEnd'
         ));
     }
 }
