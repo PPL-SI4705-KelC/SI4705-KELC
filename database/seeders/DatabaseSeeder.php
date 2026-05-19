@@ -18,6 +18,6 @@ class DatabaseSeeder extends Seeder
             CommunitySeeder::class,
             EmissionSeeder::class,
             JourneyTestSeeder::class,
-        ]);
+      ]);
     }
 }
