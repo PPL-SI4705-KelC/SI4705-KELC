@@ -2,23 +2,19 @@
 
 namespace App\Http\Controllers;
 
-<<<<<<< HEAD
 use Illuminate\Http\Request;
 use App\Models\EmissionRecord;
 use Carbon\Carbon;
-=======
 use App\Http\Requests\StoreEmissionRequest;
 use App\Models\Activity;
 use App\Models\Emission;
 use App\Services\EmissionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
->>>>>>> 14f647be00457c2be938ca3977220a2674dc60a5
 use Illuminate\Support\Facades\Auth;
 
 class EmissionController extends Controller
 {
-<<<<<<< HEAD
     public function index(Request $request)
     {
         // Pastikan menggunakan user yang sedang login (jika ada Auth, atau fallback untuk demo)
@@ -142,7 +138,6 @@ class EmissionController extends Controller
         return redirect()->back()->with('success', 'Data jejak karbon berhasil disimpan!');
     }
 }
-=======
     public function __construct(
         private EmissionService $calculator
     ) {}
@@ -342,8 +337,9 @@ class EmissionController extends Controller
 
         return view('emissions.index', compact(
             'chartData', 'avgEmission', 'avgSdg', 'perfStatus', 'perfLabel', 'perfMessage',
+
             'sevenDayStart', 'sevenDayEnd', 'paginatedRows', 'chartStart', 'chartEnd'
         ));
     }
 }
->>>>>>> 14f647be00457c2be938ca3977220a2674dc60a5
+
