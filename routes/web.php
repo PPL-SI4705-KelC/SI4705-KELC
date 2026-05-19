@@ -74,17 +74,4 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/leaderboard', [AdminDashboardController::class, 'leaderboard'])->name('leaderboard');
 });
 
-// ── Admin Routes ─────────────────────────────────────────────
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/blogs', [AdminDashboardController::class, 'blogs'])->name('blogs');
-    Route::post('/blogs/{blog}/approve', [AdminDashboardController::class, 'approveBlog'])->name('blogs.approve');
-    Route::post('/blogs/{blog}/reject', [AdminDashboardController::class, 'rejectBlog'])->name('blogs.reject');
-    Route::get('/quizzes', [AdminDashboardController::class, 'quizzes'])->name('quizzes');
-    Route::post('/quizzes', [AdminDashboardController::class, 'storeQuiz'])->name('quizzes.store');
-    Route::delete('/quizzes/{quiz}', [AdminDashboardController::class, 'destroyQuiz'])->name('quizzes.destroy');
-    Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
-    Route::get('/leaderboard', [AdminDashboardController::class, 'leaderboard'])->name('leaderboard');
-});
-
 require __DIR__.'/auth.php';
