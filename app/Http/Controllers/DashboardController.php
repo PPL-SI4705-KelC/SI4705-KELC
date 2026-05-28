@@ -113,4 +113,29 @@ class DashboardController extends Controller
             'trendDirection'
         ));
     }
+
+    /**
+     * User Leaderboard page.
+     */
+    public function leaderboard(Request $request)
+    {
+        $user = Auth::user();
+        $query = \App\Models\User::where('role', 'user');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->orderByDesc('xp')->paginate(20)->withQueryString();
+
+        // Calculate current user's rank
+        $userRank = \App\Models\User::where('xp', '>', $user->xp)->count() + 1;
+        $user->rank = $userRank;
+
+        return view('leaderboard', compact('users', 'user'));
+    }
 }

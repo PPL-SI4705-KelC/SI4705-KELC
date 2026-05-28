@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             QuizSeeder::class,
             CommunitySeeder::class,
             JourneyTestSeeder::class,
+            BlogSeeder::class,
         ]);
     }
 }

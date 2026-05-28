@@ -165,7 +165,7 @@
             </div>
             
             <div class="mt-8 text-center">
-                <a href="#" class="text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-widest transition-colors">View Full Leaderboard</a>
+                <a href="{{ route('leaderboard') }}" class="text-xs font-bold text-[#2A5C4D] hover:text-[#1e4237] uppercase tracking-widest transition-colors">View Full Leaderboard</a>
             </div>
         </div>
 

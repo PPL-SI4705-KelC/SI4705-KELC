@@ -58,6 +58,23 @@
                         Save
                     </button>
                 </form>
+                
+                {{-- Share --}}
+                <div x-data="{ copied: false }" class="relative">
+                    <button type="button" @click="
+                        navigator.clipboard.writeText('{{ route('community.show', $community->slug) }}#post-{{ $post->id }}');
+                        copied = true;
+                        setTimeout(() => copied = false, 2000);
+                    " class="flex items-center gap-1.5 text-sm text-content-muted hover:text-primary transition-colors focus:outline-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 10.742l-2.612 1.488m0 0a3 3 0 100 5.143l2.612 1.488m-2.612-3.12a3 3 0 000-.904m0 0l2.612-1.488m1.282-4.043a3 3 0 106.63-.538a3 3 0 00-6.63.538zm4.72 13.918a3 3 0 11-5.143-2.612a3 3 0 015.143 2.612z"/>
+                        </svg>
+                        Share
+                    </button>
+                    <span x-show="copied" style="display: none;" class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2.5 py-1 text-[10px] font-bold text-white bg-slate-900 rounded-md shadow-sm whitespace-nowrap z-30 transition-all duration-300">
+                        Link copied!
+                    </span>
+                </div>
             </div>
 
             {{-- Comments --}}
