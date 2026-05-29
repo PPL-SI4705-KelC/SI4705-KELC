@@ -18,6 +18,7 @@ class AdminSeeder extends Seeder
             'role' => 'admin',
             'xp' => 0,
             'level' => 1,
+            'total_point' => 0,
             'email_verified_at' => now(),
         ]);
 
@@ -29,6 +30,7 @@ class AdminSeeder extends Seeder
             'role' => 'user',
             'xp' => 1500,
             'level' => 2,
+            'total_point' => 0,
             'email_verified_at' => now(),
         ]);
     }

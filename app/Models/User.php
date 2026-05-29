@@ -29,6 +29,7 @@ class User extends Authenticatable
         'level',
         'avatar',
         'bio',
+        'total_point',
     ];
 
     /**
@@ -53,6 +54,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'xp' => 'integer',
             'level' => 'integer',
+            'total_point' => 'integer',
         ];
     }
 
