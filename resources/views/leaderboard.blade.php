@@ -9,6 +9,7 @@
     </x-slot>
 
     <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
+<<<<<<< HEAD
         {{-- Search and Current User Rank Widget --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             {{-- Current User Rank Stats --}}
@@ -41,6 +42,23 @@
                 @if(request()->filled('search'))
                     <a href="{{ route('leaderboard') }}" class="text-[10px] font-bold text-[#2D5A4C] hover:underline mt-2 text-center">Clear search filter</a>
                 @endif
+=======
+        {{-- Current User Rank Stats --}}
+        <div class="bg-[#f0f9f5] rounded-3xl p-6 border border-[#2D5A4C]/10 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-[#2D5A4C] text-white flex items-center justify-center font-black text-xl shadow-md">
+                    #{{ $user->rank }}
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Your Standing</h4>
+                    <p class="text-lg font-black text-[#2D5A4C] mt-0.5">{{ $user->name }}</p>
+                    <p class="text-xs font-semibold text-gray-500 mt-0.5">{{ $user->journey_title }} · Level {{ $user->level }}</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-2xl font-black text-[#2D5A4C]">{{ number_format($user->xp) }}</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Total XP</p>
+>>>>>>> cd4c856d7a25e5e37ad3c3c09980994b7ef4b0ba
             </div>
         </div>
 

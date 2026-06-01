@@ -3,8 +3,13 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
             <div>
+<<<<<<< HEAD
                 <h1 class="text-[28px] font-black text-gray-900 tracking-tight leading-none">Blog Management</h1>
                 <p class="text-sm text-gray-400 font-medium mt-2">Create and manage your climate action content</p>
+=======
+                <h1 class="text-xl font-bold text-content">Blog Management</h1>
+                <p class="text-sm text-content-muted">Create and manage your climate action content</p>
+>>>>>>> cd4c856d7a25e5e37ad3c3c09980994b7ef4b0ba
             </div>
             <div>
                 <a href="{{ route('admin.blogs.create') }}" id="btn-add-new-blog" class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]">

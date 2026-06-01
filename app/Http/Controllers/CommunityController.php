@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attachment;
-use App\Models\Comment;
 use App\Models\Community;
-use App\Models\Hashtag;
 use App\Models\Post;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Services\NotificationService;
 
 class CommunityController extends Controller
 {
@@ -31,61 +30,33 @@ class CommunityController extends Controller
 
     /**
      * Show community with posts feed.
-     * Supports optional ?hashtag=slug filter.
      */
-    public function show(Community $community, Request $request)
+    public function show(Community $community)
     {
-        $user          = Auth::user();
-        $isMember      = $community->members()->where('user_id', $user->id)->exists();
-        $activeHashtag = null;
+        $user = Auth::user();
+        $isMember = $community->members()->where('user_id', $user->id)->exists();
 
-        $postsQuery = $community->posts()
-            ->with([
-                'user:id,name,username,level,avatar',
-                // Only load top-level comments; replies are nested inside
-                'comments' => fn($q) => $q
-                    ->whereNull('parent_comment_id')
-                    ->with([
-                        'user:id,name,username,avatar',
-                        'replies' => fn($r) => $r
-                            ->with([
-                                'user:id,name,username,avatar',
-                                'replies.user:id,name,username,avatar',
-                            ])
-                            ->latest(),
-                    ])
-                    ->latest(),
-                'attachments',
-                'hashtags',
-            ])
+        $posts = $community->posts()
+            ->with(['user:id,name,username,level,avatar', 'comments.user:id,name,username'])
             ->withCount(['likes', 'comments'])
-            ->latest();
-
-        // ── Hashtag filter ──────────────────────────────────────
-        if ($request->filled('hashtag')) {
-            $activeHashtag = Hashtag::where('slug', $request->hashtag)->first();
-            if ($activeHashtag) {
-                $postsQuery->whereHas('hashtags', fn($q) => $q->where('hashtag_id', $activeHashtag->id));
-            }
-        }
-
-        $posts = $postsQuery->paginate(15)->withQueryString();
+            ->latest()
+            ->paginate(15);
 
         // Mark liked/saved for current user
         $likedPostIds = $user->likedPosts()->pluck('posts.id')->toArray();
         $savedPostIds = $user->savedPosts()->pluck('posts.id')->toArray();
 
-        // Right sidebar data
-        $onlineUsers     = \App\Models\User::where('id', '!=', $user->id)->inRandomOrder()->limit(5)->get();
-        $memberCommunity = $community->members()->where('users.id', '!=', $user->id)->inRandomOrder()->limit(4)->get();
-        $friends         = \App\Models\User::where('id', '!=', $user->id)->inRandomOrder()->limit(3)->get();
+        // Right sidebar data for the community
+        $onlineMembers = $community->members()
+            ->where('last_seen_at', '>=', now()->subMinutes(5))
+            ->get();
 
-        return view('community.show', compact(
-            'community', 'posts', 'isMember',
-            'likedPostIds', 'savedPostIds',
-            'onlineUsers', 'memberCommunity', 'friends',
-            'activeHashtag'
-        ));
+        $allMembers = $community->members()
+            ->orderByDesc('users.last_seen_at')
+            ->orderBy('users.name')
+            ->get();
+
+        return view('community.show', compact('community', 'posts', 'isMember', 'likedPostIds', 'savedPostIds', 'onlineMembers', 'allMembers'));
     }
 
     /**
@@ -98,6 +69,9 @@ class CommunityController extends Controller
         if (!$community->members()->where('user_id', $user->id)->exists()) {
             $community->members()->attach($user->id, ['role' => 'member']);
             $community->increment('member_count');
+
+            // Send notification
+            app(NotificationService::class)->notifyCommunityJoined($user, $community);
         }
 
         return back()->with('success', 'You joined ' . $community->name . '!');
@@ -119,61 +93,29 @@ class CommunityController extends Controller
     }
 
     /**
-     * Create a post in a community (with optional image, files, hashtags).
+     * Create a post in a community.
      */
     public function storePost(Request $request, Community $community)
     {
         $request->validate([
             'content' => ['required', 'string', 'min:1', 'max:2000'],
-            'image'   => ['nullable', 'image', 'max:2048'],
-            'files'   => ['nullable', 'array', 'max:5'],
-            'files.*' => [
-                'file',
-                'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt',
-                'max:10240',
-            ],
+            'image' => ['nullable', 'file', 'max:10240'], // Allow any file up to 10MB
+            'file' => ['nullable', 'file', 'max:10240'], // Allow general files up to 10MB
         ]);
 
         $data = [
-            'user_id'      => Auth::id(),
+            'user_id' => Auth::id(),
             'community_id' => $community->id,
-            'content'      => $request->content,
+            'content' => $request->content,
         ];
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('posts', 'public');
+        } elseif ($request->hasFile('file')) {
+            $data['image'] = $request->file('file')->store('posts', 'public');
         }
 
-        $post = Post::create($data);
-
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store("post-files/{$post->id}", 'public');
-                Attachment::create([
-                    'post_id'   => $post->id,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $path,
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                ]);
-            }
-        }
-
-        // Extract & persist hashtags
-        preg_match_all('/#(\w+)/', $request->content, $matches);
-        $hashtagIds = [];
-        foreach (array_unique($matches[1]) as $name) {
-            $slug    = Str::slug($name);
-            $hashtag = Hashtag::firstOrCreate(
-                ['slug' => $slug],
-                ['name' => strtolower($name), 'slug' => $slug]
-            );
-            $hashtag->increment('usage_count');
-            $hashtagIds[] = $hashtag->id;
-        }
-        if ($hashtagIds) {
-            $post->hashtags()->sync($hashtagIds);
-        }
+        Post::create($data);
 
         return back()->with('success', 'Post created!');
     }
@@ -191,6 +133,9 @@ class CommunityController extends Controller
         } else {
             $post->likes()->attach($user->id);
             $post->increment('likes_count');
+
+            // Send notification (only on like, not unlike)
+            app(NotificationService::class)->notifyPostLiked($post, $user);
         }
 
         return back();
@@ -213,7 +158,7 @@ class CommunityController extends Controller
     }
 
     /**
-     * Add a top-level comment (traditional form POST).
+     * Add comment to a post.
      */
     public function storeComment(Request $request, Post $post)
     {
@@ -222,64 +167,21 @@ class CommunityController extends Controller
         ]);
 
         Comment::create([
-            'user_id'            => Auth::id(),
-            'post_id'            => $post->id,
-            'parent_comment_id'  => null,
-            'content'            => $request->content,
+            'user_id' => Auth::id(),
+            'post_id' => $post->id,
+            'content' => $request->content,
         ]);
 
         $post->increment('comments_count');
+
+        // Send notification
+        app(NotificationService::class)->notifyPostCommented($post, Auth::user());
 
         return back()->with('success', 'Comment added!');
     }
 
     /**
-     * Add a reply comment via AJAX (JSON response).
-     * POST /posts/{post}/comments/ajax
-     *
-     * Body: { content, parent_comment_id }
-     */
-    public function storeCommentAjax(Request $request, Post $post)
-    {
-        $request->validate([
-            'content'            => ['required', 'string', 'min:1', 'max:500'],
-            'parent_comment_id'  => ['nullable', 'integer', 'exists:comments,id'],
-        ]);
-
-        $user = Auth::user();
-
-        $comment = Comment::create([
-            'user_id'            => $user->id,
-            'post_id'            => $post->id,
-            'parent_comment_id'  => $request->parent_comment_id ?: null,
-            'content'            => $request->content,
-        ]);
-
-        $post->increment('comments_count');
-
-        // Return enough data for Alpine.js to render the new reply immediately
-        return response()->json([
-            'comment' => [
-                'id'                 => $comment->id,
-                'content'            => $comment->content,
-                'parent_comment_id'  => $comment->parent_comment_id,
-                'created_at'         => $comment->created_at->diffForHumans(),
-                'can_delete'         => true, // always true for own comment
-                'delete_url'         => route('comments.destroy', $comment),
-                'user' => [
-                    'id'       => $user->id,
-                    'username' => $user->username,
-                    'name'     => $user->name,
-                    'avatar'   => $user->avatar
-                        ? asset('storage/' . $user->avatar)
-                        : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=E2E8F0&color=2A5C4D&bold=true',
-                ],
-            ],
-        ]);
-    }
-
-    /**
-     * Delete a comment (also deletes all replies via CASCADE).
+     * Delete a comment.
      */
     public function destroyComment(Comment $comment)
     {
@@ -287,36 +189,48 @@ class CommunityController extends Controller
             abort(403);
         }
 
-        $post = $comment->post;
-
-        // Count this comment + all its nested replies before deleting
-        $totalDeleted = 1 + $comment->replies()->count();
+        $comment->post->decrement('comments_count');
         $comment->delete();
-        $post->decrement('comments_count', max(1, $totalDeleted));
-
-        if (request()->wantsJson()) {
-            return response()->json(['deleted' => true]);
-        }
 
         return back()->with('success', 'Comment deleted.');
     }
 
     /**
-     * JSON endpoint: return up to 6 hashtag suggestions matching the query.
-     * GET /hashtags/suggest?q=tech
+     * Get real-time sidebar status for a community.
      */
-    public function hashtagSuggest(Request $request)
+    public function sidebarStatus(Community $community)
     {
-        $q    = trim($request->get('q', ''));
-        $tags = Hashtag::when(
-                    $q !== '',
-                    fn($query) => $query->search($q),
-                    fn($query) => $query
-                )
-                ->popular()
-                ->limit(6)
-                ->get(['name', 'slug', 'usage_count']);
+        $user = Auth::user();
 
-        return response()->json($tags);
+        // Fetch online members
+        $onlineMembers = $community->members()
+            ->where('last_seen_at', '>=', now()->subMinutes(5))
+            ->get()
+            ->map(function ($u) {
+                return [
+                    'username' => $u->username,
+                    'name' => $u->name,
+                    'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D',
+                ];
+            });
+
+        // Fetch all members (ordered by activity status first, then name)
+        $allMembers = $community->members()
+            ->orderByDesc('users.last_seen_at')
+            ->orderBy('users.name')
+            ->get()
+            ->map(function ($u) {
+                return [
+                    'username' => $u->username,
+                    'name' => $u->name,
+                    'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D',
+                    'is_online' => $u->isOnline(),
+                ];
+            });
+
+        return response()->json([
+            'onlineMembers' => $onlineMembers,
+            'allMembers' => $allMembers,
+        ]);
     }
 }
