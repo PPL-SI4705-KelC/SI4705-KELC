@@ -45,7 +45,12 @@ class CommunityController extends Controller
         $likedPostIds = $user->likedPosts()->pluck('posts.id')->toArray();
         $savedPostIds = $user->savedPosts()->pluck('posts.id')->toArray();
 
-        return view('community.show', compact('community', 'posts', 'isMember', 'likedPostIds', 'savedPostIds'));
+        // Right sidebar data mocks for the community
+        $onlineUsers = \App\Models\User::where('id', '!=', $user->id)->inRandomOrder()->limit(5)->get();
+        $memberCommunity = $community->members()->where('users.id', '!=', $user->id)->inRandomOrder()->limit(4)->get();
+        $friends = \App\Models\User::where('id', '!=', $user->id)->inRandomOrder()->limit(3)->get();
+
+        return view('community.show', compact('community', 'posts', 'isMember', 'likedPostIds', 'savedPostIds', 'onlineUsers', 'memberCommunity', 'friends'));
     }
 
     /**

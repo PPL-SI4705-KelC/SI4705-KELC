@@ -8,49 +8,71 @@ use Illuminate\Support\Str;
 
 class Blog extends Model
 {
+    // ── Category Constants ────────────────────────────────────
+    public const CATEGORY_TRANSPORTATION = 'Transportation';
+    public const CATEGORY_CONSUMPTION    = 'Consumption';
+    public const CATEGORY_ENERGY         = 'Energy';
+
+    // ── Status Constants ─────────────────────────────────────
+    public const STATUS_DRAFT     = 'draft';
+    public const STATUS_PUBLISHED = 'published';
+    public const STATUS_PENDING   = 'pending';
+    public const STATUS_REJECTED  = 'rejected';
+
     protected $fillable = [
         'user_id',
         'title',
         'slug',
-        'excerpt',
+        'short_description',
         'content',
-        'cover_image',
+        'category',
+        'featured_image',
+        'tags',
         'status',
-        'rejection_reason',
-        'reviewed_by',
-        'reviewed_at',
-        'published_at',
+        'reject_reason',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'reviewed_at' => 'datetime',
-            'published_at' => 'datetime',
-        ];
-    }
+    // ── Boot: Auto-generate Slug ─────────────────────────────
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
-        static::creating(function ($blog) {
+        static::creating(function (Blog $blog): void {
             if (empty($blog->slug)) {
-                $blog->slug = Str::slug($blog->title) . '-' . Str::random(6);
+                $baseSlug = Str::slug($blog->title);
+                $slug     = $baseSlug . '-' . Str::random(6);
+
+                // Guarantee uniqueness
+                while (static::where('slug', $slug)->exists()) {
+                    $slug = $baseSlug . '-' . Str::random(6);
+                }
+
+                $blog->slug = $slug;
             }
         });
     }
 
     // ── Scopes ───────────────────────────────────────────────
 
-    public function scopeApproved($query)
+    public function scopePublished($query)
     {
-        return $query->where('status', 'approved');
+        return $query->where('status', self::STATUS_PUBLISHED);
     }
 
     public function scopePending($query)
     {
-        return $query->where('status', 'pending');
+        return $query->where('status', self::STATUS_PENDING);
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', self::STATUS_DRAFT);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', self::STATUS_REJECTED);
     }
 
     // ── Relationships ────────────────────────────────────────
@@ -60,8 +82,54 @@ class Blog extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function reviewer(): BelongsTo
+    // ── Helpers ──────────────────────────────────────────────
+
+    /**
+     * Get all valid categories.
+     */
+    public static function categories(): array
     {
-        return $this->belongsTo(User::class, 'reviewed_by');
+        return [
+            self::CATEGORY_TRANSPORTATION,
+            self::CATEGORY_CONSUMPTION,
+            self::CATEGORY_ENERGY,
+        ];
+    }
+
+    /**
+     * Get all valid statuses.
+     */
+    public static function statuses(): array
+    {
+        return [
+            self::STATUS_DRAFT,
+            self::STATUS_PUBLISHED,
+            self::STATUS_PENDING,
+            self::STATUS_REJECTED,
+        ];
+    }
+
+    /**
+     * Check if the blog is editable by admin.
+     */
+    public function isEditable(): bool
+    {
+        return in_array($this->status, [self::STATUS_DRAFT, self::STATUS_PUBLISHED]);
+    }
+
+    /**
+     * Check if blog can be approved.
+     */
+    public function canBeApproved(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    /**
+     * Check if blog can be rejected.
+     */
+    public function canBeRejected(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
     }
 }

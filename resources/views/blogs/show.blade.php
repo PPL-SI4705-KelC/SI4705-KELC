@@ -5,8 +5,21 @@
     </x-slot>
 
     <article class="max-w-3xl mx-auto animate-fade-in">
-        @if($blog->cover_image)
-        <img src="{{ asset('storage/' . $blog->cover_image) }}" alt="" class="w-full h-64 object-cover rounded-2xl mb-6">
+        @if($blog->featured_image)
+        <div class="relative mb-6">
+            <img src="{{ asset('storage/' . $blog->featured_image) }}" alt="" class="w-full h-64 object-cover rounded-2xl shadow-sm">
+            @if($blog->tags)
+            <div class="absolute top-4 right-4 flex flex-wrap justify-end gap-2 max-w-[70%]">
+                @foreach(explode(',', $blog->tags) as $tag)
+                    @if(trim($tag))
+                        <span class="bg-black/60 backdrop-blur-md text-white px-3 py-1.5 text-[10px] font-bold rounded-full uppercase tracking-wider shadow-sm border border-white/10">
+                            #{{ trim($tag) }}
+                        </span>
+                    @endif
+                @endforeach
+            </div>
+            @endif
+        </div>
         @endif
 
         <h1 class="text-3xl font-bold text-content leading-tight">{{ $blog->title }}</h1>
@@ -15,11 +28,11 @@
             <div class="avatar-primary">{{ substr($blog->user->name, 0, 2) }}</div>
             <div>
                 <p class="font-medium text-content">{{ $blog->user->name }}</p>
-                <p class="text-sm text-content-muted">{{ $blog->published_at?->format('d M Y') }} · Level {{ $blog->user->level }}</p>
+                <p class="text-sm text-content-muted">{{ $blog->created_at?->format('d M Y') }} · Level {{ $blog->user->level }}</p>
             </div>
         </div>
 
-        <div class="prose prose-green max-w-none mt-6 text-content-body leading-relaxed">
+        <div class="prose prose-green max-w-none mt-6 text-content-body leading-relaxed break-words">
             {!! nl2br(e($blog->content)) !!}
         </div>
     </article>

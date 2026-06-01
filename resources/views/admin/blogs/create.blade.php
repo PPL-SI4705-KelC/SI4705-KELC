@@ -1,24 +1,25 @@
 <x-app-layout>
-    <x-slot name="title">Write Blog</x-slot>
+    <x-slot name="title">Create New Post</x-slot>
     <x-slot name="header">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
             <div>
-                <a href="{{ route('blogs.my') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#2D5A4C] font-medium mb-2 transition-colors">
+                <a href="{{ route('admin.blogs.index') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#2D5A4C] font-medium mb-2 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
                     </svg>
-                    Back to My Blogs
+                    Back to Blog Management
                 </a>
-                <h1 class="text-[28px] font-black text-gray-900 tracking-tight leading-none">Write a Blog Post ✍️</h1>
-                <p class="text-sm text-gray-400 font-medium mt-2">Share your climate story, insights, and ideas to inspire others.</p>
+                <h1 class="text-[28px] font-black text-gray-900 tracking-tight leading-none">Create New Post</h1>
+                <p class="text-sm text-gray-400 font-medium mt-2">Share your stories, insights, and practical tips to inspire climate action and a more sustainable lifestyle.</p>
             </div>
             <div class="flex items-center gap-3">
-                <button type="button" onclick="document.getElementById('form-action').value='pending'; document.getElementById('blog-form').requestSubmit()"
-                        class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]">
+                <button type="button" onclick="document.getElementById('blog-form').requestSubmit(document.getElementById('btn-publish-top'))"
+                        class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]"
+                        id="btn-publish-header">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
                     </svg>
-                    Submit for Review
+                    Publish
                 </button>
             </div>
         </div>
@@ -33,15 +34,15 @@
     @endif
 
     <form method="POST"
-          action="{{ route('blogs.store') }}"
+          action="{{ route('admin.blogs.store') }}"
           enctype="multipart/form-data"
-          class="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12 mt-6"
+          class="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12"
           id="blog-form"
           x-data="blogForm()">
         @csrf
 
         {{-- Hidden action field (set by JS based on which button is clicked) --}}
-        <input type="hidden" name="action" id="form-action" value="pending">
+        <input type="hidden" name="action" id="form-action" value="publish">
 
         {{-- ══ Main Form Card ══════════════════════════════════════ --}}
         <div class="card space-y-6">
@@ -55,7 +56,7 @@
                     </svg>
                     Category
                 </label>
-                <select id="category" name="category" class="form-input max-w-xs" required>
+                <select id="category" name="category" class="form-input max-w-xs">
                     <option value="">Select a category</option>
                     @foreach($categories as $cat)
                         <option value="{{ $cat }}" {{ old('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
@@ -88,7 +89,7 @@
                     <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/>
                     </svg>
-                    Short Description / Excerpt
+                    Short Description
                 </label>
                 <textarea id="short_description"
                           name="short_description"
@@ -111,7 +112,6 @@
                           rows="14"
                           class="form-input font-sans text-sm leading-relaxed"
                           placeholder="Start writing your blog post here... Share your story, insights, and ideas with your readers."
-                          required
                           x-model="contentText">{{ old('content') }}</textarea>
                 <div class="flex justify-between mt-1.5">
                     <p class="text-[11px] text-gray-400 font-medium">Minimum 300 characters required</p>
@@ -127,7 +127,7 @@
                 <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v13.5a1.5 1.5 0 001.5 1.5z"/>
                 </svg>
-                Cover Image
+                Featured Image
             </label>
 
             {{-- Drag & Drop Upload Zone --}}
@@ -203,24 +203,25 @@
                     </svg>
                     Save Draft
                 </button>
-                <a href="{{ route('blogs.my') }}"
-                   class="inline-flex items-center gap-2 text-gray-500 font-bold text-sm px-5 py-3 rounded-xl hover:bg-gray-50 transition-all border border-gray-200"
+                <a href="{{ route('admin.blogs.index') }}"
+                   class="inline-flex items-center gap-2 text-red-500 font-bold text-sm px-5 py-3 rounded-xl hover:bg-red-50 transition-all"
                    id="btn-discard">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                    </svg>
                     Discard
                 </a>
             </div>
 
-            <div class="flex items-center gap-3">
-                <span class="text-xs text-gray-400 font-medium hidden sm:inline-block">Your blog will be reviewed by an admin before publishing.</span>
-                <button type="submit"
-                        onclick="document.getElementById('form-action').value='pending'"
-                        class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
-                    </svg>
-                    Submit for Review
-                </button>
-            </div>
+            <button type="submit"
+                    onclick="document.getElementById('form-action').value='publish'"
+                    class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]"
+                    id="btn-publish-top">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+                </svg>
+                Publish Post
+            </button>
         </div>
     </form>
 

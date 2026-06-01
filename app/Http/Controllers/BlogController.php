@@ -20,9 +20,9 @@ class BlogController extends Controller
      */
     public function index()
     {
-        $blogs = Blog::approved()
+        $blogs = Blog::published()
             ->with('user:id,name,username,level')
-            ->latest('published_at')
+            ->latest()
             ->paginate(12);
 
         return view('blogs.index', compact('blogs'));
@@ -33,7 +33,7 @@ class BlogController extends Controller
      */
     public function show(Blog $blog)
     {
-        if ($blog->status !== 'approved' && $blog->user_id !== Auth::id()) {
+        if ($blog->status !== 'published' && $blog->user_id !== Auth::id() && !Auth::user()?->isAdmin()) {
             abort(404);
         }
 
@@ -47,7 +47,8 @@ class BlogController extends Controller
      */
     public function create()
     {
-        return view('blogs.create');
+        $categories = Blog::categories();
+        return view('blogs.create', compact('categories'));
     }
 
     /**
@@ -57,18 +58,23 @@ class BlogController extends Controller
     {
         $user = Auth::user();
 
+        $action = $request->input('action', 'pending');
         $data = $request->validated();
         $data['user_id'] = $user->id;
         $data['slug'] = Str::slug($data['title']) . '-' . Str::random(6);
+        $data['status'] = ($action === 'draft') ? Blog::STATUS_DRAFT : Blog::STATUS_PENDING;
 
-        if ($request->hasFile('cover_image')) {
-            $data['cover_image'] = $request->file('cover_image')->store('blogs', 'public');
+        if ($request->hasFile('featured_image')) {
+            $data['featured_image'] = $request->file('featured_image')->store('blogs', 'public');
         }
 
+        unset($data['action']);
         Blog::create($data);
 
+        $msg = ($action === 'draft') ? 'Blog saved as draft!' : 'Blog post submitted for review!';
+
         return redirect()->route('blogs.my')
-            ->with('success', 'Blog post submitted for review!');
+            ->with('success', $msg);
     }
 
     /**
@@ -86,7 +92,8 @@ class BlogController extends Controller
     public function edit(Blog $blog)
     {
         $this->authorize('update', $blog);
-        return view('blogs.edit', compact('blog'));
+        $categories = Blog::categories();
+        return view('blogs.edit', compact('blog', 'categories'));
     }
 
     /**
@@ -96,22 +103,27 @@ class BlogController extends Controller
     {
         $this->authorize('update', $blog);
 
+        $action = $request->input('action', 'pending');
         $data = $request->validated();
 
-        if ($request->hasFile('cover_image')) {
-            $data['cover_image'] = $request->file('cover_image')->store('blogs', 'public');
+        if ($action === 'draft') {
+            $data['status'] = Blog::STATUS_DRAFT;
+        } else {
+            $data['status'] = Blog::STATUS_PENDING;
+            $data['reject_reason'] = null; // Clear if resubmitting
         }
 
-        // Reset to pending if was rejected
-        if ($blog->status === 'rejected') {
-            $data['status'] = 'pending';
-            $data['rejection_reason'] = null;
+        if ($request->hasFile('featured_image')) {
+            $data['featured_image'] = $request->file('featured_image')->store('blogs', 'public');
         }
 
+        unset($data['action']);
         $blog->update($data);
 
+        $msg = ($action === 'draft') ? 'Draft updated!' : 'Blog post resubmitted for review!';
+
         return redirect()->route('blogs.my')
-            ->with('success', 'Blog post updated!');
+            ->with('success', $msg);
     }
 
     /**
