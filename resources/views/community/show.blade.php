@@ -81,11 +81,11 @@
     {{-- ════════════════════════════════════════
          MAIN 2-COLUMN LAYOUT: Feed + Sidebar
     ════════════════════════════════════════ --}}
-    <div class="flex gap-5 items-start justify-center" id="forum-layout" style="padding-bottom: 150px;">
+    <div class="flex gap-5 items-start justify-center {{ $posts->count() === 0 ? 'forum-empty' : '' }}" id="forum-layout" style="{{ $posts->count() > 0 ? 'padding-bottom: 150px;' : '' }}">
 
 
         {{-- ══════════════ FEED ══════════════ --}}
-        <div class="flex-1 min-w-0 max-w-[880px] space-y-4" id="feed-container">
+        <div class="flex-1 min-w-0 max-w-[880px] {{ $posts->count() === 0 ? 'space-y-0' : 'space-y-4' }}" id="feed-container">
 
             {{-- ── Active hashtag filter banner ─────────────────── --}}
             @if($activeHashtag)
@@ -429,15 +429,275 @@
             </div>{{-- end post item (flex gap-4) --}}
 
             @empty
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center py-20">
-                <svg class="w-12 h-12 text-gray-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <p class="text-[14px] font-semibold text-gray-400">Belum ada postingan</p>
+            {{--
+                ═══════════════════════════════════════════════════════
+                EMPTY STATE — production-ready, no-scroll layout
+                ═══════════════════════════════════════════════════════
+                Architecture:
+                  body.empty-page            → overflow: hidden
+                  main                       → overflow: hidden; flex: 1
+                  #forum-layout.forum-empty  → height: 100%; align-items: stretch
+                  #feed-container            → display: flex; flex-direction: column
+                  #empty-state-wrapper       → CSS Grid 1fr/auto, flex-1
+                    Row 1 (1fr)              → icon + text, vertically centered
+                    Row 2 (auto)             → composer, always at true bottom
+            --}}
+
+            {{-- Scoped styles: only injected when posts = 0 --}}
+            <style>
+                body { overflow: hidden !important; }
+                main {
+                    overflow: hidden !important;
+                    height: calc(100vh - 112px); /* fill viewport below the h-28 header */
+                    padding-bottom: 0 !important; /* remove pb-12 so no extra space */
+                }
+                #forum-layout.forum-empty {
+                    align-items: stretch !important;
+                    height: 100%;
+                }
+                #forum-layout.forum-empty #feed-container {
+                    display: flex !important;
+                    flex-direction: column !important;
+                    height: 100% !important;
+                    overflow: hidden !important;
+                }
+                #empty-state-wrapper {
+                    display: grid;
+                    grid-template-rows: 1fr auto;
+                    flex: 1;
+                    height: 100%;
+                    overflow: hidden;
+                }
+                #empty-state-icon-row {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 0; /* prevent grid row blowout */
+                }
+                #empty-posting-bar {
+                    padding-bottom: 24px;
+                }
+            </style>
+
+            <div id="empty-state-wrapper">
+
+                {{-- ── Row 1: Icon + Copy — fills all space, centered ── --}}
+                <div id="empty-state-icon-row" style="animation: emptyFadeIn .5s ease both;">
+
+                    {{-- Illustration / Icon --}}
+                    <div class="relative mb-6">
+                        <div class="absolute inset-0 -m-4 rounded-full bg-[#2D5A4C]/5 animate-pulse"></div>
+                        <div class="absolute inset-0 -m-8 rounded-full bg-[#2D5A4C]/3"></div>
+                        <div class="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-[#2D5A4C]/10 to-[#2D5A4C]/20 flex items-center justify-center shadow-inner">
+                            <svg class="w-10 h-10 text-[#2D5A4C]/60" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 2H4a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    {{-- Copy --}}
+                    <h2 class="text-[18px] font-bold text-gray-700 mb-2">Belum ada postingan</h2>
+                    @if($isMember)
+                    <p class="text-[14px] text-gray-400 text-center max-w-[280px] leading-relaxed">
+                        Jadilah orang pertama yang<br>memulai diskusi di komunitas ini!
+                    </p>
+                    @else
+                    <p class="text-[14px] text-gray-400 text-center max-w-[280px] leading-relaxed">
+                        Bergabung ke komunitas ini<br>untuk mulai berdiskusi.
+                    </p>
+                    @endif
+
+                </div>{{-- end Row 1 --}}
+
+                {{-- ── Row 2: Composer — auto height, naturally at bottom of grid ── --}}
                 @if($isMember)
-                <p class="text-[12px] text-gray-300 mt-1">Jadilah yang pertama berdiskusi!</p>
+                <div id="empty-posting-bar"
+                     x-data="postForm()"
+                     style="animation: emptyFadeIn .5s ease .15s both; opacity:0;">
+
+                    <div class="relative bg-white rounded-2xl border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.07)] overflow-hidden"
+                         @dragover.prevent="dragOver = true"
+                         @dragleave.prevent="dragOver = false"
+                         @drop.prevent="handleDrop($event)"
+                         :class="{'ring-2 ring-[#2D5A4C]/30': dragOver}">
+
+                        {{-- Image preview --}}
+                        <div x-show="imagePreview" style="display:none;"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-y-2"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="flex items-center gap-2.5 px-4 pt-3">
+                            <img :src="imagePreview" class="h-9 w-12 object-cover rounded-md shrink-0">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[12px] font-semibold text-gray-700 truncate" x-text="imageName"></p>
+                                <p class="text-[10px] text-emerald-600 font-semibold">Gambar siap diposting</p>
+                            </div>
+                            <button type="button" @click="removeImage()" class="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 flex items-center justify-center text-gray-400 transition shrink-0">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+
+                        {{-- File attachment previews --}}
+                        <div x-show="attachedFiles.length > 0" style="display:none;"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-y-2"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="px-4 pt-2.5 space-y-1">
+                            <template x-for="(f, idx) in attachedFiles" :key="idx">
+                                <div class="flex items-center gap-2 px-2.5 py-1.5 bg-gray-50 rounded-xl border border-gray-100">
+                                    <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" :class="fileIconBg(f.type)">
+                                        <span class="text-[9px] font-black" :class="fileIconColor(f.type)" x-text="fileLabel(f.type)"></span>
+                                    </span>
+                                    <span class="flex-1 min-w-0">
+                                        <span class="block text-[11px] font-semibold text-gray-700 truncate" x-text="f.name"></span>
+                                        <span class="text-[10px] text-gray-400" x-text="humanSize(f.size)"></span>
+                                    </span>
+                                    <button type="button" @click="removeFile(idx)"
+                                            class="w-5 h-5 rounded-full hover:bg-red-100 hover:text-red-500 flex items-center justify-center text-gray-300 transition shrink-0">
+                                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Validation errors --}}
+                        <div x-show="imageError" style="display:none;" class="px-5 pt-2 text-[11px] text-red-500 font-semibold" x-text="imageError"></div>
+                        <div x-show="fileError" style="display:none;" class="px-5 pt-1 text-[11px] text-red-500 font-semibold" x-text="fileError"></div>
+
+                        {{-- Drag hint --}}
+                        <div x-show="dragOver" style="display:none;"
+                             class="absolute inset-0 flex items-center justify-center bg-white/95 border-2 border-dashed border-[#2D5A4C] rounded-2xl z-10 text-[#2D5A4C] font-bold text-[14px] gap-2">
+                            <svg class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            Lepaskan gambar di sini
+                        </div>
+
+                        {{-- Hashtag autocomplete dropdown --}}
+                        <div x-show="hashtagSuggestions.length > 0" style="display:none;"
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="absolute bottom-full mb-1 left-4 right-4 bg-white border border-gray-100 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.10)] z-50 overflow-hidden">
+                            <div class="px-3 py-1.5 border-b border-gray-50">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Saran Hashtag</p>
+                            </div>
+                            <template x-for="tag in hashtagSuggestions" :key="tag.slug">
+                                <button type="button"
+                                        @click="insertHashtag(tag.name)"
+                                        class="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#2D5A4C]/5 text-left transition">
+                                    <span class="w-6 h-6 rounded-full bg-[#2D5A4C]/10 flex items-center justify-center text-[#2D5A4C] text-[11px] font-black shrink-0">#</span>
+                                    <span class="flex-1 min-w-0">
+                                        <span class="text-[13px] font-semibold text-gray-700" x-text="'#' + tag.name"></span>
+                                    </span>
+                                    <span class="text-[10px] text-gray-400 shrink-0" x-text="tag.usage_count + ' posts'"></span>
+                                </button>
+                            </template>
+                        </div>
+
+                        <form id="post-form-empty"
+                              method="POST"
+                              action="{{ route('community.posts.store', $community) }}"
+                              enctype="multipart/form-data"
+                              @submit="submitting = true">
+                            @csrf
+
+                            {{-- Hidden file inputs --}}
+                            <input type="file" x-ref="imgInput" name="image" class="hidden"
+                                   accept="image/jpeg,image/png,image/gif,image/webp"
+                                   @change="handleFileSelect($event)">
+                            <input type="file" x-ref="fileInput" name="files[]" class="hidden" multiple
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                                   @change="handleAttachSelect($event)">
+
+                            {{-- Textarea --}}
+                            <div class="px-4 pt-4 pb-1">
+                                <textarea
+                                    name="content"
+                                    id="post-content-empty"
+                                    required
+                                    placeholder="Discuss here or Mention someone... (Ketik # untuk hashtag)"
+                                    maxlength="2000"
+                                    rows="2"
+                                    @input="autoResize($el); charCount = $el.value.length; detectHashtag($el)"
+                                    @keydown.escape="hashtagSuggestions = []"
+                                    @blur="setTimeout(() => hashtagSuggestions = [], 200)"
+                                    class="w-full bg-transparent border-0 text-[14px] text-gray-700 placeholder-gray-400 resize-none focus:ring-0 focus:outline-none leading-relaxed"
+                                    style="min-height:56px; max-height:140px;"
+                                ></textarea>
+                            </div>
+
+                            {{-- Toolbar --}}
+                            <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3">
+                                <div class="flex items-center gap-0.5">
+                                    {{-- Image upload --}}
+                                    <label class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center cursor-pointer transition"
+                                           :class="imagePreview ? 'text-[#2D5A4C]' : 'text-gray-400 hover:text-[#2D5A4C]'"
+                                           title="Tambah gambar"
+                                           @click="$refs.imgInput.click(); $event.preventDefault()">
+                                        <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                    </label>
+
+                                    {{-- File upload --}}
+                                    <button type="button" title="Upload file (PDF, DOC, XLS, PPT, TXT)"
+                                            :class="attachedFiles.length > 0 ? 'text-[#2D5A4C]' : 'text-gray-400 hover:text-[#2D5A4C]'"
+                                            class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition relative"
+                                            @click="$refs.fileInput.click()">
+                                        <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                        </svg>
+                                        <span x-show="attachedFiles.length > 0" style="display:none;"
+                                              class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#2D5A4C] text-white text-[9px] font-black flex items-center justify-center"
+                                              x-text="attachedFiles.length"></span>
+                                    </button>
+
+                                    {{-- Hashtag --}}
+                                    <button type="button" title="Tambah hashtag"
+                                            class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-[#2D5A4C] transition"
+                                            @click="insertHashtagSymbol()">
+                                        <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                                        </svg>
+                                    </button>
+
+                                    {{-- Char counter --}}
+                                    <span x-show="charCount > 0" style="display:none;"
+                                          class="ml-1 text-[10px] font-mono"
+                                          :class="charCount > 1800 ? (charCount > 1950 ? 'text-red-500 font-bold' : 'text-amber-500') : 'text-gray-300'">
+                                        <span x-text="2000 - charCount"></span>
+                                    </span>
+                                </div>
+
+                                <button type="submit"
+                                        :disabled="submitting"
+                                        class="flex items-center gap-1.5 bg-[#2D5A4C] hover:bg-[#1a3d32] disabled:opacity-60 text-white px-5 py-1.5 rounded-full font-bold text-[13px] transition shadow-sm hover:shadow active:scale-[0.97]">
+                                    <template x-if="submitting">
+                                        <svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                        </svg>
+                                    </template>
+                                    <span x-text="submitting ? 'Posting...' : 'Posting'"></span>
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>{{-- end Row 2 (composer) --}}
                 @else
-                <p class="text-[12px] text-gray-300 mt-1">Bergabung untuk mulai berdiskusi.</p>
+                {{-- Non-member Row 2: join button --}}
+                <div class="flex justify-center pb-8"
+                     style="animation: emptyFadeIn .5s ease .15s both; opacity:0;">
+                    <a href="{{ route('community.join', $community) }}"
+                       class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2D5A4C] hover:bg-[#1a3d32] text-white text-[14px] font-bold rounded-full transition shadow-sm hover:shadow active:scale-[0.97]">
+                        Bergabung sekarang
+                    </a>
+                </div>
                 @endif
-            </div>
+
+            </div>{{-- end #empty-state-wrapper --}}
             @endforelse
 
             {{-- Pagination --}}
@@ -510,7 +770,7 @@
     {{-- ════════════════════════════════════════
          BOTTOM POSTING BAR
     ════════════════════════════════════════ --}}
-    @if($isMember)
+    @if($isMember && $posts->count() > 0)
     {{--
         BOTTOM POSTING BAR
         Strategy: The bar is fixed. Its left/width are synced to #feed-container via JS
@@ -703,6 +963,8 @@
         </div>
     </div>
 
+    @endif {{-- end @if($isMember && $posts->count() > 0) --}}
+
     {{-- JS: Sync posting bar width & position to match the feed-container column --}}
     <script>
     (function () {
@@ -722,6 +984,7 @@
         function syncBar() {
             var feed = document.getElementById('feed-container');
             var bar  = document.getElementById('posting-bar');
+            // Only sync when the fixed bar exists (i.e. posts.count > 0)
             if (!feed || !bar) return;
 
             var rect = feed.getBoundingClientRect();
@@ -941,6 +1204,7 @@
         }
     }
     </script>
+    @if($isMember)
     <script>
     function postForm() {
         return {
@@ -1087,7 +1351,8 @@
                 }, 220); // debounce 220ms
             },
             insertHashtag(name) {
-                const ta     = document.getElementById('post-content');
+                const ta     = this.$root.querySelector('textarea[name="content"]');
+                if (!ta) return;
                 const cursor = ta.selectionStart;
                 const val    = ta.value;
                 // Replace the trailing '#word' with '#name '
@@ -1101,7 +1366,8 @@
                 this.autoResize(ta);
             },
             insertHashtagSymbol() {
-                const ta     = document.getElementById('post-content');
+                const ta     = this.$root.querySelector('textarea[name="content"]');
+                if (!ta) return;
                 const start  = ta.selectionStart;
                 const end    = ta.selectionEnd;
                 ta.value     = ta.value.slice(0, start) + '#' + ta.value.slice(end);
@@ -1115,7 +1381,7 @@
         }
     }
     </script>
-    @endif
+    @endif {{-- end @if($isMember) --}}
 
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 2px; }
@@ -1124,6 +1390,16 @@
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(8px); }
             to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes emptyFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        #empty-state-wrapper {
+            animation: emptyFadeIn .5s ease both;
+        }
+        #empty-posting-bar {
+            animation: emptyFadeIn .6s ease .15s both;
         }
     </style>
 
