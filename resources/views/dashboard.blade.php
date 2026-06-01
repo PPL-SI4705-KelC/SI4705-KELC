@@ -1,5 +1,4 @@
 <x-app-layout>
-    <x-slot name="title">Dashboard</x-slot>
     <div class="w-full space-y-6" x-data="{ showLearnMoreModal: false }">
         
         {{-- Hero Section --}}

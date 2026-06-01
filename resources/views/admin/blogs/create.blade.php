@@ -107,7 +107,6 @@
                     </svg>
                     Blog Content
                 </label>
-<<<<<<< HEAD
                 <textarea id="content"
                           name="content"
                           rows="14"
@@ -116,20 +115,6 @@
                           x-model="contentText">{{ old('content') }}</textarea>
                 <div class="flex justify-between mt-1.5">
                     <p class="text-[11px] text-gray-400 font-medium">Minimum 300 characters required</p>
-=======
-                
-                <input id="content" type="hidden" name="content" value="{{ old('content') }}">
-                <trix-editor input="content"
-                             x-ref="trixEditor"
-                             @trix-change="contentText = $refs.trixEditor.editor.toString()"
-                             class="form-input trix-content font-sans text-sm leading-relaxed min-h-[350px] bg-white border border-gray-200 rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]/20 focus:border-[#2D5A4C]"
-                             placeholder="Start writing your blog post here... Share your story, insights, and ideas with your readers."></trix-editor>
-
-                <div class="flex justify-between mt-1.5">
-                    <p class="text-[11px] font-medium" :class="contentText.length >= 300 && contentText.length <= 10000 ? 'text-gray-400' : 'text-red-500'">
-                        Character Range: 300 - 10,000 (Current: <span x-text="contentText.length"></span> characters)
-                    </p>
->>>>>>> cd4c856d7a25e5e37ad3c3c09980994b7ef4b0ba
                     <p class="text-[11px] text-gray-400 font-medium"><span x-text="wordCount"></span> words</p>
                 </div>
                 <x-input-error :messages="$errors->get('content')" class="mt-1.5" />
@@ -241,7 +226,6 @@
     </form>
 
     @push('scripts')
-<<<<<<< HEAD
     <script>
         function blogForm() {
             return {
@@ -249,163 +233,6 @@
                 imagePreview: null,
                 isDragging: false,
 
-=======
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css">
-    <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script>
-    <script>
-        // Define custom Web Components for alignments
-        if (!window.customElements.get('align-left')) {
-            window.customElements.define('align-left', class extends HTMLElement {
-                connectedCallback() {
-                    this.style.display = 'block';
-                    this.style.textAlign = 'left';
-                }
-            });
-        }
-        if (!window.customElements.get('align-center')) {
-            window.customElements.define('align-center', class extends HTMLElement {
-                connectedCallback() {
-                    this.style.display = 'block';
-                    this.style.textAlign = 'center';
-                }
-            });
-        }
-        if (!window.customElements.get('align-right')) {
-            window.customElements.define('align-right', class extends HTMLElement {
-                connectedCallback() {
-                    this.style.display = 'block';
-                    this.style.textAlign = 'right';
-                }
-            });
-        }
-        if (!window.customElements.get('align-justify')) {
-            window.customElements.define('align-justify', class extends HTMLElement {
-                connectedCallback() {
-                    this.style.display = 'block';
-                    this.style.textAlign = 'justify';
-                }
-            });
-        }
-
-        // Configure custom Trix attributes before initializing
-        if (window.Trix) {
-            Trix.config.textAttributes.underline = {
-                tagName: "u",
-                inheritable: true,
-                parser: function(element) {
-                    return element.tagName === "U" || element.style.textDecoration === "underline";
-                }
-            };
-            
-            Trix.config.blockAttributes.alignLeft = {
-                tagName: "align-left",
-                parse: true,
-                nestable: false,
-                exclusive: true
-            };
-            Trix.config.blockAttributes.alignCenter = {
-                tagName: "align-center",
-                parse: true,
-                nestable: false,
-                exclusive: true
-            };
-            Trix.config.blockAttributes.alignRight = {
-                tagName: "align-right",
-                parse: true,
-                nestable: false,
-                exclusive: true
-            };
-            Trix.config.blockAttributes.alignJustify = {
-                tagName: "align-justify",
-                parse: true,
-                nestable: false,
-                exclusive: true
-            };
-        }
-
-        // Listen to trix-initialize to add buttons to the toolbar
-        document.addEventListener("trix-initialize", function(event) {
-            const toolbar = event.target.toolbarElement;
-            
-            // 1. Underline Button
-            const textTools = toolbar.querySelector(".trix-button-group--text-tools");
-            if (textTools && !textTools.querySelector("[data-trix-attribute='underline']")) {
-                const underlineBtn = `
-                    <button type="button" class="trix-button trix-button--icon trix-button--icon-underline" data-trix-attribute="underline" data-trix-key="u" title="Underline" tabindex="-1">
-                        <svg class="w-3.5 h-3.5 mx-auto" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin: auto;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75v5.25a5.25 5.25 0 1 1-10.5 0V6.75m2.25 13.5h6" />
-                        </svg>
-                    </button>
-                `;
-                const italicBtn = textTools.querySelector("[data-trix-attribute='italic']");
-                if (italicBtn) {
-                    italicBtn.insertAdjacentHTML("afterend", underlineBtn);
-                } else {
-                    textTools.insertAdjacentHTML("beforeend", underlineBtn);
-                }
-            }
-            
-            // 2. Alignment Buttons
-            const blockTools = toolbar.querySelector(".trix-button-group--block-tools");
-            if (blockTools && !blockTools.querySelector("[data-trix-attribute='alignCenter']")) {
-                const alignGroup = `
-                    <span class="trix-button-group trix-button-group--alignment-tools">
-                        <button type="button" class="trix-button trix-button--icon trix-button--icon-align-left" data-trix-attribute="alignLeft" title="Align Left" tabindex="-1">
-                            <svg class="w-3.5 h-3.5 mx-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin: auto;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h12m-12 5.25h16.5" />
-                            </svg>
-                        </button>
-                        <button type="button" class="trix-button trix-button--icon trix-button--icon-align-center" data-trix-attribute="alignCenter" title="Align Center" tabindex="-1">
-                            <svg class="w-3.5 h-3.5 mx-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin: auto;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M5.25 12h13.5m-15 5.25h16.5" />
-                            </svg>
-                        </button>
-                        <button type="button" class="trix-button trix-button--icon trix-button--icon-align-right" data-trix-attribute="alignRight" title="Align Right" tabindex="-1">
-                            <svg class="w-3.5 h-3.5 mx-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin: auto;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M9 12h11.25m-16.5 5.25h16.5" />
-                            </svg>
-                        </button>
-                        <button type="button" class="trix-button trix-button--icon trix-button--icon-align-justify" data-trix-attribute="alignJustify" title="Justify" tabindex="-1">
-                            <svg class="w-3.5 h-3.5 mx-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin: auto;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                            </svg>
-                        </button>
-                    </span>
-                `;
-                blockTools.insertAdjacentHTML("afterend", alignGroup);
-            }
-        });
-    </script>
-    <style>
-        trix-toolbar .trix-button-group--file-tools {
-            display: none !important;
-        }
-        trix-editor {
-            min-height: 350px !important;
-            background-color: #fff !important;
-        }
-        .trix-button-group--alignment-tools {
-            border-left: 1px solid #e2e8f0 !important;
-            margin-left: 10px !important;
-            padding-left: 5px !important;
-        }
-    </style>
-    <script>
-        function blogForm() {
-            return {
-                contentText: '',
-                imagePreview: null,
-                isDragging: false,
-
-                init() {
-                    this.$nextTick(() => {
-                        if (this.$refs.trixEditor && this.$refs.trixEditor.editor) {
-                            this.contentText = this.$refs.trixEditor.editor.toString();
-                        }
-                    });
-                },
-
->>>>>>> cd4c856d7a25e5e37ad3c3c09980994b7ef4b0ba
                 get wordCount() {
                     if (!this.contentText) return 0;
                     return this.contentText.trim().split(/\s+/).filter(w => w.length > 0).length;
