@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminBlogController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommunityController;
@@ -36,10 +37,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
     Route::post('/quiz', [QuizController::class, 'submit'])->name('quiz.submit');
 
-    // [DEV ONLY] Quiz testing helpers — protected in controller by APP_ENV check
-    Route::get('/quiz/dev/reset-today', [QuizController::class, 'devResetToday'])->name('quiz.dev.reset');
-    Route::get('/quiz/dev/simulate-tomorrow', [QuizController::class, 'devSimulateTomorrow'])->name('quiz.dev.tomorrow');
-
     // Blogs
     Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
     Route::get('/blogs/my', [BlogController::class, 'myBlogs'])->name('blogs.my');
@@ -59,21 +56,50 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/posts/{post}/like', [CommunityController::class, 'toggleLike'])->name('posts.like');
     Route::post('/posts/{post}/save', [CommunityController::class, 'toggleSave'])->name('posts.save');
     Route::post('/posts/{post}/comments', [CommunityController::class, 'storeComment'])->name('posts.comments.store');
+    Route::post('/posts/{post}/comments/ajax', [CommunityController::class, 'storeCommentAjax'])->name('posts.comments.store.ajax');
     Route::delete('/comments/{comment}', [CommunityController::class, 'destroyComment'])->name('comments.destroy');
+
+    // Hashtag autocomplete (JSON — used by Alpine.js fetch in posting bar)
+    Route::get('/hashtags/suggest', [CommunityController::class, 'hashtagSuggest'])->name('hashtags.suggest');
 
     // Climate Journey Map
     Route::get('/journey', [JourneyController::class, 'index'])->name('journey.index');
+
+    // Leaderboard
+    Route::get('/leaderboard', [DashboardController::class, 'leaderboard'])->name('leaderboard');
 });
 
 // ── Admin Routes ─────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/blogs', [AdminDashboardController::class, 'blogs'])->name('blogs');
-    Route::post('/blogs/{blog}/approve', [AdminDashboardController::class, 'approveBlog'])->name('blogs.approve');
-    Route::post('/blogs/{blog}/reject', [AdminDashboardController::class, 'rejectBlog'])->name('blogs.reject');
+    
+    // Admin Blogs (dedicated controller)
+    Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs.index');
+    Route::get('/blogs/create', [AdminBlogController::class, 'create'])->name('blogs.create');
+    Route::post('/blogs', [AdminBlogController::class, 'store'])->name('blogs.store');
+    Route::get('/blogs/{blog}/edit', [AdminBlogController::class, 'edit'])->name('blogs.edit');
+    Route::put('/blogs/{blog}', [AdminBlogController::class, 'update'])->name('blogs.update');
+    Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->name('blogs.destroy');
+    Route::post('/blogs/{blog}/approve', [AdminBlogController::class, 'approve'])->name('blogs.approve');
+    Route::post('/blogs/{blog}/reject', [AdminBlogController::class, 'reject'])->name('blogs.reject');
+    
+    // Admin Quizzes
     Route::get('/quizzes', [AdminDashboardController::class, 'quizzes'])->name('quizzes');
     Route::post('/quizzes', [AdminDashboardController::class, 'storeQuiz'])->name('quizzes.store');
+    Route::get('/quizzes/{quiz}/edit', [AdminDashboardController::class, 'editQuiz'])->name('quizzes.edit');
+    Route::put('/quizzes/{quiz}', [AdminDashboardController::class, 'updateQuiz'])->name('quizzes.update');
     Route::delete('/quizzes/{quiz}', [AdminDashboardController::class, 'destroyQuiz'])->name('quizzes.destroy');
+    
+    // Admin Communities
+    Route::get('/communities', [AdminDashboardController::class, 'communities'])->name('communities');
+    Route::get('/communities/create', [AdminDashboardController::class, 'createCommunity'])->name('communities.create');
+    Route::post('/communities', [AdminDashboardController::class, 'storeCommunity'])->name('communities.store');
+    Route::get('/communities/{community}/edit', [AdminDashboardController::class, 'editCommunity'])->name('communities.edit');
+    Route::put('/communities/{community}', [AdminDashboardController::class, 'updateCommunity'])->name('communities.update');
+    Route::delete('/communities/{community}', [AdminDashboardController::class, 'destroyCommunity'])->name('communities.destroy');
+    Route::post('/communities/{community}/toggle-status', [AdminDashboardController::class, 'toggleCommunityStatus'])->name('communities.toggle-status');
+
+
     Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
     Route::get('/leaderboard', [AdminDashboardController::class, 'leaderboard'])->name('leaderboard');
 });

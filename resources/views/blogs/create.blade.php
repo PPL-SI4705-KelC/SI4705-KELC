@@ -1,34 +1,278 @@
 <x-app-layout>
     <x-slot name="title">Write Blog</x-slot>
     <x-slot name="header">
-        <h1 class="text-xl font-bold text-content">Write a Blog Post ✍️</h1>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+            <div>
+                <a href="{{ route('blogs.my') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#2D5A4C] font-medium mb-2 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+                    </svg>
+                    Back to My Blogs
+                </a>
+                <h1 class="text-[28px] font-black text-gray-900 tracking-tight leading-none">Write a Blog Post ✍️</h1>
+                <p class="text-sm text-gray-400 font-medium mt-2">Share your climate story, insights, and ideas to inspire others.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="document.getElementById('form-action').value='pending'; document.getElementById('blog-form').requestSubmit()"
+                        class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+                    </svg>
+                    Submit for Review
+                </button>
+            </div>
+        </div>
     </x-slot>
 
-    <form method="POST" action="{{ route('blogs.store') }}" enctype="multipart/form-data" class="max-w-2xl space-y-5 animate-fade-in">
+    {{-- Flash Messages --}}
+    @if(session('error'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+             class="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-red-500 text-white text-sm font-bold rounded-full shadow-lg">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <form method="POST"
+          action="{{ route('blogs.store') }}"
+          enctype="multipart/form-data"
+          class="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12 mt-6"
+          id="blog-form"
+          x-data="blogForm()">
         @csrf
-        <div class="card space-y-5">
+
+        {{-- Hidden action field (set by JS based on which button is clicked) --}}
+        <input type="hidden" name="action" id="form-action" value="pending">
+
+        {{-- ══ Main Form Card ══════════════════════════════════════ --}}
+        <div class="card space-y-6">
+
+            {{-- Category --}}
             <div>
-                <label for="title" class="form-label">Title</label>
-                <input id="title" type="text" name="title" value="{{ old('title') }}" required class="form-input" placeholder="An engaging title about climate action">
+                <label for="category" class="form-label flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
+                    </svg>
+                    Category
+                </label>
+                <select id="category" name="category" class="form-input max-w-xs" required>
+                    <option value="">Select a category</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat }}" {{ old('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                    @endforeach
+                </select>
+                <x-input-error :messages="$errors->get('category')" class="mt-1.5" />
+            </div>
+
+            <hr class="border-gray-100">
+
+            {{-- Title --}}
+            <div>
+                <label for="title" class="form-label flex items-center gap-2">
+                    <span class="text-[#2D5A4C] font-black text-base">H</span>
+                    Blog Title
+                </label>
+                <input id="title"
+                       type="text"
+                       name="title"
+                       value="{{ old('title') }}"
+                       class="form-input text-lg font-bold"
+                       placeholder="Enter an engaging title for your blog post..."
+                       required>
                 <x-input-error :messages="$errors->get('title')" class="mt-1.5" />
             </div>
+
+            {{-- Short Description --}}
             <div>
-                <label for="excerpt" class="form-label">Excerpt <span class="text-content-muted font-normal">(optional)</span></label>
-                <textarea id="excerpt" name="excerpt" rows="2" class="form-input" placeholder="A brief summary...">{{ old('excerpt') }}</textarea>
+                <label for="short_description" class="form-label flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/>
+                    </svg>
+                    Short Description / Excerpt
+                </label>
+                <textarea id="short_description"
+                          name="short_description"
+                          rows="3"
+                          class="form-input"
+                          placeholder="Write a brief description or excerpt (150-200 characters recommended)...">{{ old('short_description') }}</textarea>
+                <x-input-error :messages="$errors->get('short_description')" class="mt-1.5" />
             </div>
+
+            {{-- Content --}}
             <div>
-                <label for="content" class="form-label">Content</label>
-                <textarea id="content" name="content" rows="12" required class="form-input" placeholder="Share your climate story (min 50 characters)...">{{ old('content') }}</textarea>
+                <label for="content" class="form-label flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
+                    </svg>
+                    Blog Content
+                </label>
+                <textarea id="content"
+                          name="content"
+                          rows="14"
+                          class="form-input font-sans text-sm leading-relaxed"
+                          placeholder="Start writing your blog post here... Share your story, insights, and ideas with your readers."
+                          required
+                          x-model="contentText">{{ old('content') }}</textarea>
+                <div class="flex justify-between mt-1.5">
+                    <p class="text-[11px] text-gray-400 font-medium">Minimum 300 characters required</p>
+                    <p class="text-[11px] text-gray-400 font-medium"><span x-text="wordCount"></span> words</p>
+                </div>
                 <x-input-error :messages="$errors->get('content')" class="mt-1.5" />
             </div>
-            <div>
-                <label for="cover_image" class="form-label">Cover Image <span class="text-content-muted font-normal">(optional)</span></label>
-                <input id="cover_image" type="file" name="cover_image" accept="image/*" class="form-input">
+        </div>
+
+        {{-- ══ Featured Image Card ═════════════════════════════════ --}}
+        <div class="card space-y-4">
+            <label class="form-label flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v13.5a1.5 1.5 0 001.5 1.5z"/>
+                </svg>
+                Cover Image
+            </label>
+
+            {{-- Drag & Drop Upload Zone --}}
+            <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#2D5A4C]/40 transition-colors cursor-pointer bg-gray-50/50"
+                 @click="$refs.fileInput.click()"
+                 @dragover.prevent="isDragging = true"
+                 @dragleave.prevent="isDragging = false"
+                 @drop.prevent="handleDrop($event)"
+                 :class="isDragging ? 'border-[#2D5A4C] bg-[#e2f0ea]/30' : ''"
+                 id="upload-zone">
+
+                {{-- Preview Image --}}
+                <template x-if="imagePreview">
+                    <div class="mb-4">
+                        <img :src="imagePreview" alt="Preview" class="max-h-48 mx-auto rounded-xl shadow-sm border border-gray-100 object-cover">
+                        <button type="button" @click.stop="removeImage()" class="mt-2 text-xs text-red-500 hover:text-red-700 font-bold">
+                            Remove Image
+                        </button>
+                    </div>
+                </template>
+
+                <template x-if="!imagePreview">
+                    <div>
+                        <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-[#e2f0ea] flex items-center justify-center">
+                            <svg class="w-6 h-6 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-bold text-[#2D5A4C]">Click to upload or drag and drop</p>
+                        <p class="text-xs text-gray-400 mt-1">PNG, JPG or GIF (max. 5MB)</p>
+                    </div>
+                </template>
+
+                <input type="file"
+                       name="featured_image"
+                       accept="image/jpeg,image/png,image/gif,image/webp"
+                       class="hidden"
+                       x-ref="fileInput"
+                       @change="handleFileSelect($event)"
+                       id="featured-image-input">
+            </div>
+            <x-input-error :messages="$errors->get('featured_image')" class="mt-1.5" />
+        </div>
+
+        {{-- ══ Tags Card ═══════════════════════════════════════════ --}}
+        <div class="card space-y-4">
+            <label for="tags" class="form-label flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
+                </svg>
+                Tags
+            </label>
+            <input id="tags"
+                   type="text"
+                   name="tags"
+                   value="{{ old('tags') }}"
+                   class="form-input"
+                   placeholder="Add tags separated by commas (e.g., technology, coding, tutorial)">
+            <p class="text-[11px] text-gray-400 font-medium">Tags help readers find your content</p>
+            <x-input-error :messages="$errors->get('tags')" class="mt-1.5" />
+        </div>
+
+        {{-- ══ Bottom Actions ══════════════════════════════════════ --}}
+        <div class="flex items-center justify-between pt-2">
+            <div class="flex items-center gap-3">
+                <button type="submit"
+                        onclick="document.getElementById('form-action').value='draft'"
+                        class="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 font-bold text-sm px-5 py-3 rounded-xl hover:bg-gray-50 transition-all shadow-sm"
+                        id="btn-save-draft">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/>
+                    </svg>
+                    Save Draft
+                </button>
+                <a href="{{ route('blogs.my') }}"
+                   class="inline-flex items-center gap-2 text-gray-500 font-bold text-sm px-5 py-3 rounded-xl hover:bg-gray-50 transition-all border border-gray-200"
+                   id="btn-discard">
+                    Discard
+                </a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-400 font-medium hidden sm:inline-block">Your blog will be reviewed by an admin before publishing.</span>
+                <button type="submit"
+                        onclick="document.getElementById('form-action').value='pending'"
+                        class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+                    </svg>
+                    Submit for Review
+                </button>
             </div>
         </div>
-        <div class="flex items-center gap-3">
-            <button type="submit" class="btn-primary py-3 px-8">Submit for Review</button>
-            <span class="text-xs text-content-muted">Your blog will be reviewed by an admin before publishing.</span>
-        </div>
     </form>
+
+    @push('scripts')
+    <script>
+        function blogForm() {
+            return {
+                contentText: @json(old('content', '')),
+                imagePreview: null,
+                isDragging: false,
+
+                get wordCount() {
+                    if (!this.contentText) return 0;
+                    return this.contentText.trim().split(/\s+/).filter(w => w.length > 0).length;
+                },
+
+                handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    if (file) this.previewFile(file);
+                },
+
+                handleDrop(event) {
+                    this.isDragging = false;
+                    const file = event.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        // Set the file to the input
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        this.$refs.fileInput.files = dt.files;
+                        this.previewFile(file);
+                    }
+                },
+
+                previewFile(file) {
+                    // Validate size (5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Image must not exceed 5MB.');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.imagePreview = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                },
+
+                removeImage() {
+                    this.imagePreview = null;
+                    this.$refs.fileInput.value = '';
+                }
+            };
+        }
+    </script>
+    @endpush
 </x-app-layout>

@@ -77,14 +77,13 @@
             <div class="hidden md:flex items-center gap-8 text-sm font-medium">
                 <a href="#features" class="text-content-body hover:text-primary transition-colors">Features</a>
                 <a href="#journey" class="text-content-body hover:text-primary transition-colors">Journey</a>
-                <a href="#community" class="text-content-body hover:text-primary transition-colors">Community</a>
             </div>
 
             <div class="flex items-center gap-4">
                 @auth
                     <a href="{{ route('dashboard') }}" class="btn-primary text-sm shadow-lg shadow-primary/30 hover:scale-105 transition-transform">Go to Dashboard</a>
                 @else
-                    <a href="{{ route('login') }}" class="hidden sm:block text-sm font-semibold text-primary hover:text-primary-700 transition-colors">Sign in</a>
+                    <a href="{{ route('login') }}" class="hidden sm:block text-sm font-semibold text-primary hover:text-primary-700 transition-colors">Login</a>
                     <a href="{{ route('register') }}" class="btn-primary text-sm shadow-lg shadow-primary/30 hover:scale-105 transition-transform">Get Started</a>
                 @endauth
             </div>
@@ -289,10 +288,10 @@
             
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="{{ route('register') }}" class="px-8 py-4 bg-accent-500 hover:bg-accent-400 text-accent-900 text-lg font-bold rounded-2xl shadow-xl shadow-accent-500/30 transition-all hover:scale-105">
-                    Create Free Account
+                    Create Account
                 </a>
                 <a href="{{ route('login') }}" class="px-8 py-4 bg-white/10 hover:bg-white/20 text-white text-lg font-bold rounded-2xl backdrop-blur-sm border border-white/20 transition-all">
-                    Sign In
+                     Login
                 </a>
             </div>
         </div>
