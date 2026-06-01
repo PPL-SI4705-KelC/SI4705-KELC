@@ -3,7 +3,7 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
             <div>
-                <a href="{{ route('admin.blogs.index') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#2D5A4C] font-medium mb-2 transition-colors">
+                <a href="{{ route('admin.blogs.index') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#2A5C4D] font-medium mb-2 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
                     </svg>
@@ -14,11 +14,11 @@
             </div>
             <div class="flex items-center gap-3">
                 {{-- Status Badge --}}
-                <span class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold {{ $blog->status === 'published' ? 'bg-[#e2f0ea] text-[#2D5A4C]' : 'bg-[#fff8e1] text-[#E65100]' }}">
+                <span class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold {{ $blog->status === 'published' ? 'bg-[#e2f0ea] text-[#2A5C4D]' : 'bg-[#fff8e1] text-[#E65100]' }}">
                     {{ ucfirst($blog->status) }}
                 </span>
                 <button type="button" onclick="document.getElementById('blog-edit-form').requestSubmit(document.getElementById('btn-publish-bottom'))"
-                        class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]"
+                        class="inline-flex items-center gap-2 bg-[#2A5C4D] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]"
                         id="btn-publish-header">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
@@ -55,7 +55,7 @@
             {{-- Category --}}
             <div>
                 <label for="category" class="form-label flex items-center gap-2">
-                    <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-[#2A5C4D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
                     </svg>
@@ -75,7 +75,7 @@
             {{-- Title --}}
             <div>
                 <label for="title" class="form-label flex items-center gap-2">
-                    <span class="text-[#2D5A4C] font-black text-base">H</span>
+                    <span class="text-[#2A5C4D] font-black text-base">H</span>
                     Blog Title
                 </label>
                 <input id="title"
@@ -91,7 +91,7 @@
             {{-- Short Description --}}
             <div>
                 <label for="short_description" class="form-label flex items-center gap-2">
-                    <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-[#2A5C4D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/>
                     </svg>
                     Short Description
@@ -107,7 +107,7 @@
             {{-- Content --}}
             <div>
                 <label for="content" class="form-label flex items-center gap-2">
-                    <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-[#2A5C4D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
                     </svg>
                     Blog Content
@@ -116,7 +116,7 @@
                 <trix-editor input="content"
                              x-ref="trixEditor"
                              @trix-change="contentText = $refs.trixEditor.editor.toString()"
-                             class="form-input trix-content font-sans text-sm leading-relaxed min-h-[350px] bg-white border border-gray-200 rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]/20 focus:border-[#2D5A4C]"
+                             class="form-input trix-content font-sans text-sm leading-relaxed min-h-[350px] bg-white border border-gray-200 rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D]"
                              placeholder="Start writing your blog post here... Share your story, insights, and ideas with your readers."></trix-editor>
 
                 <div class="flex justify-between mt-1.5">
@@ -132,7 +132,7 @@
         {{-- ══ Featured Image Card ═════════════════════════════════ --}}
         <div class="card space-y-4">
             <label class="form-label flex items-center gap-2">
-                <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-[#2A5C4D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v13.5a1.5 1.5 0 001.5 1.5z"/>
                 </svg>
                 Featured Image
@@ -149,17 +149,17 @@
             @endif
 
             {{-- Upload Zone --}}
-            <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#2D5A4C]/40 transition-colors cursor-pointer bg-gray-50/50"
+            <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#2A5C4D]/40 transition-colors cursor-pointer bg-gray-50/50"
                  @click="$refs.fileInput.click()"
                  @dragover.prevent="isDragging = true"
                  @dragleave.prevent="isDragging = false"
                  @drop.prevent="handleDrop($event)"
-                 :class="isDragging ? 'border-[#2D5A4C] bg-[#e2f0ea]/30' : ''"
+                 :class="isDragging ? 'border-[#2A5C4D] bg-[#e2f0ea]/30' : ''"
                  id="upload-zone">
 
                 <template x-if="imagePreview">
                     <div class="mb-4">
-                        <p class="text-xs text-[#2D5A4C] font-bold mb-2">New Image Preview:</p>
+                        <p class="text-xs text-[#2A5C4D] font-bold mb-2">New Image Preview:</p>
                         <img :src="imagePreview" alt="New preview" class="max-h-48 mx-auto rounded-xl shadow-sm border border-gray-100 object-cover">
                         <button type="button" @click.stop="removeImage()" class="mt-2 text-xs text-red-500 hover:text-red-700 font-bold">
                             Remove New Image
@@ -170,11 +170,11 @@
                 <template x-if="!imagePreview">
                     <div>
                         <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-[#e2f0ea] flex items-center justify-center">
-                            <svg class="w-6 h-6 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <svg class="w-6 h-6 text-[#2A5C4D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                             </svg>
                         </div>
-                        <p class="text-sm font-bold text-[#2D5A4C]">{{ $blog->featured_image ? 'Click to replace image' : 'Click to upload or drag and drop' }}</p>
+                        <p class="text-sm font-bold text-[#2A5C4D]">{{ $blog->featured_image ? 'Click to replace image' : 'Click to upload or drag and drop' }}</p>
                         <p class="text-xs text-gray-400 mt-1">PNG, JPG or GIF (max. 5MB)</p>
                     </div>
                 </template>
@@ -193,7 +193,7 @@
         {{-- ══ Tags Card ═══════════════════════════════════════════ --}}
         <div class="card space-y-4">
             <label for="tags" class="form-label flex items-center gap-2">
-                <svg class="w-4 h-4 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-[#2A5C4D]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
                 </svg>
@@ -232,7 +232,7 @@
 
             <button type="submit"
                     onclick="document.getElementById('form-action').value='publish'"
-                    class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]"
+                    class="inline-flex items-center gap-2 bg-[#2A5C4D] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]"
                     id="btn-publish-bottom">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>

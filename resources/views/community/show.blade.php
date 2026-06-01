@@ -147,45 +147,59 @@
         
         <!-- Right Sidebar (Fixed on Desktop) -->
         <div class="hidden lg:block w-[280px] shrink-0 sticky top-32">
-            <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 mb-6">
+            <script>
+                window.communitySidebarData = {
+                    online: {!! json_encode($onlineMembers->map(fn($u) => ['username' => $u->username, 'name' => $u->name, 'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D'])) !!},
+                    all: {!! json_encode($allMembers->map(fn($u) => ['username' => $u->username, 'name' => $u->name, 'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D', 'is_online' => $u->isOnline()])) !!}
+                };
+            </script>
+            <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 mb-6"
+                 x-data="communitySidebar('{{ route('community.sidebar', $community) }}', window.communitySidebarData.online, window.communitySidebarData.all)">
                 
-                <!-- Online Users -->
+                <!-- Online Members -->
                 <div class="mb-6">
                     <div class="flex items-center justify-between mb-3">
                         <h4 class="text-[12px] font-bold text-gray-400 uppercase tracking-wider">Online</h4>
-                        <span class="w-4 h-4 rounded-full bg-gray-100 text-gray-500 text-[9px] font-bold flex items-center justify-center">+{{ $onlineUsers->count() + 2 }}</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-green-50 text-green-600 text-[10px] font-black flex items-center justify-center shadow-sm" x-text="onlineMembers.length">0</span>
                     </div>
-                </div>
-                
-                <!-- Member Community -->
-                <div class="mb-6">
-                    <h4 class="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3">Community Members</h4>
-                    <div class="space-y-3">
-                        @forelse($memberCommunity as $u)
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-100">
-                                <img src="{{ $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D' }}" alt="" class="w-full h-full object-cover">
+                    <div class="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
+                        <template x-for="u in onlineMembers" :key="u.username">
+                            <div class="flex items-center gap-2.5">
+                                <div class="relative w-8 h-8 shrink-0">
+                                    <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-100 bg-white">
+                                        <img :src="u.avatar_url" alt="" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
+                                </div>
+                                <p class="text-[13px] font-bold text-[#1E293B] truncate" x-text="'@' + u.username"></p>
                             </div>
-                            <p class="text-[13px] font-bold text-[#1E293B] truncate">{{ '@'.$u->username }}</p>
+                        </template>
+                        <div x-show="onlineMembers.length === 0" class="text-xs text-gray-400 italic py-1">
+                            No other members online.
                         </div>
-                        @empty
-                        <p class="text-xs text-gray-400 italic">No other members yet.</p>
-                        @endforelse
                     </div>
                 </div>
                 
-                <!-- Friends -->
+                <!-- All Community Members -->
                 <div>
-                    <h4 class="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3">Friends</h4>
-                    <div class="space-y-3">
-                        @foreach($friends as $u)
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-100">
-                                <img src="{{ $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D' }}" alt="" class="w-full h-full object-cover">
+                    <h4 class="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3">Members</h4>
+                    <div class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+                        <template x-for="u in allMembers" :key="u.username">
+                            <div class="flex items-center gap-2.5">
+                                <div class="relative w-8 h-8 shrink-0">
+                                    <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-100 bg-white">
+                                        <img :src="u.avatar_url" alt="" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white"
+                                          :class="u.is_online ? 'bg-green-400' : 'bg-gray-300'"
+                                          :title="u.is_online ? 'Online' : 'Offline'"></span>
+                                </div>
+                                <p class="text-[13px] font-bold text-[#1E293B] truncate" x-text="'@' + u.username"></p>
                             </div>
-                            <p class="text-[13px] font-bold text-[#1E293B] truncate">{{ '@'.$u->username }}</p>
+                        </template>
+                        <div x-show="allMembers.length === 0" class="text-xs text-gray-400 italic py-1">
+                            No members yet.
                         </div>
-                        @endforeach
                     </div>
                 </div>
                 
@@ -252,4 +266,31 @@
             border-radius: 10px;
         }
     </style>
+    
+    @push('scripts')
+    <script>
+        function communitySidebar(url, initialOnline, initialAll) {
+            return {
+                onlineMembers: initialOnline || [],
+                allMembers: initialAll || [],
+                
+                init() {
+                    // Poll data every 10 seconds to keep active status real-time!
+                    setInterval(() => this.fetchData(), 10000);
+                },
+                
+                async fetchData() {
+                    try {
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        this.onlineMembers = data.onlineMembers;
+                        this.allMembers = data.allMembers;
+                    } catch (e) {
+                        console.error('Failed to fetch community sidebar status', e);
+                    }
+                }
+            };
+        }
+    </script>
+    @endpush
 </x-app-layout>

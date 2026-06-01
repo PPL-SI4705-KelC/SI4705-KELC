@@ -8,6 +8,7 @@ use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Services\NotificationService;
 
 class CommunityController extends Controller
 {
@@ -45,12 +46,17 @@ class CommunityController extends Controller
         $likedPostIds = $user->likedPosts()->pluck('posts.id')->toArray();
         $savedPostIds = $user->savedPosts()->pluck('posts.id')->toArray();
 
-        // Right sidebar data mocks for the community
-        $onlineUsers = \App\Models\User::where('id', '!=', $user->id)->inRandomOrder()->limit(5)->get();
-        $memberCommunity = $community->members()->where('users.id', '!=', $user->id)->inRandomOrder()->limit(4)->get();
-        $friends = \App\Models\User::where('id', '!=', $user->id)->inRandomOrder()->limit(3)->get();
+        // Right sidebar data for the community
+        $onlineMembers = $community->members()
+            ->where('last_seen_at', '>=', now()->subMinutes(5))
+            ->get();
 
-        return view('community.show', compact('community', 'posts', 'isMember', 'likedPostIds', 'savedPostIds', 'onlineUsers', 'memberCommunity', 'friends'));
+        $allMembers = $community->members()
+            ->orderByDesc('users.last_seen_at')
+            ->orderBy('users.name')
+            ->get();
+
+        return view('community.show', compact('community', 'posts', 'isMember', 'likedPostIds', 'savedPostIds', 'onlineMembers', 'allMembers'));
     }
 
     /**
@@ -63,6 +69,9 @@ class CommunityController extends Controller
         if (!$community->members()->where('user_id', $user->id)->exists()) {
             $community->members()->attach($user->id, ['role' => 'member']);
             $community->increment('member_count');
+
+            // Send notification
+            app(NotificationService::class)->notifyCommunityJoined($user, $community);
         }
 
         return back()->with('success', 'You joined ' . $community->name . '!');
@@ -124,6 +133,9 @@ class CommunityController extends Controller
         } else {
             $post->likes()->attach($user->id);
             $post->increment('likes_count');
+
+            // Send notification (only on like, not unlike)
+            app(NotificationService::class)->notifyPostLiked($post, $user);
         }
 
         return back();
@@ -162,6 +174,9 @@ class CommunityController extends Controller
 
         $post->increment('comments_count');
 
+        // Send notification
+        app(NotificationService::class)->notifyPostCommented($post, Auth::user());
+
         return back()->with('success', 'Comment added!');
     }
 
@@ -178,5 +193,44 @@ class CommunityController extends Controller
         $comment->delete();
 
         return back()->with('success', 'Comment deleted.');
+    }
+
+    /**
+     * Get real-time sidebar status for a community.
+     */
+    public function sidebarStatus(Community $community)
+    {
+        $user = Auth::user();
+
+        // Fetch online members
+        $onlineMembers = $community->members()
+            ->where('last_seen_at', '>=', now()->subMinutes(5))
+            ->get()
+            ->map(function ($u) {
+                return [
+                    'username' => $u->username,
+                    'name' => $u->name,
+                    'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D',
+                ];
+            });
+
+        // Fetch all members (ordered by activity status first, then name)
+        $allMembers = $community->members()
+            ->orderByDesc('users.last_seen_at')
+            ->orderBy('users.name')
+            ->get()
+            ->map(function ($u) {
+                return [
+                    'username' => $u->username,
+                    'name' => $u->name,
+                    'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D',
+                    'is_online' => $u->isOnline(),
+                ];
+            });
+
+        return response()->json([
+            'onlineMembers' => $onlineMembers,
+            'allMembers' => $allMembers,
+        ]);
     }
 }

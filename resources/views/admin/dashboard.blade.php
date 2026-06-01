@@ -299,13 +299,13 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {{-- Review Blogs --}}
                 <a href="{{ route('admin.blogs.index') }}" class="action-tile bg-gradient-to-br from-white to-primary-50/40 border-gray-100 hover:border-primary-200" style="border-color: #f3f4f6;">
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200/60 flex items-center justify-center shadow-sm group-hover:shadow transition-all duration-300">
+                    <div class="relative w-12 h-12 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200/60 flex items-center justify-center shadow-sm group-hover:shadow transition-all duration-300">
                         <span class="text-xl">📝</span>
+                        @if($stats['pending_blogs'] > 0)
+                            <span class="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white text-[9px] font-black flex items-center justify-center shadow-md" style="animation: pulseGlow 2s ease-in-out infinite;">{{ $stats['pending_blogs'] }}</span>
+                        @endif
                     </div>
                     <p class="text-xs font-bold text-content leading-tight">Review Blogs</p>
-                    @if($stats['pending_blogs'] > 0)
-                        <span class="absolute -top-1 -right-1 min-w-[22px] h-[22px] rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] font-bold flex items-center justify-center shadow-lg" style="animation: pulseGlow 2s ease-in-out infinite;">{{ $stats['pending_blogs'] }}</span>
-                    @endif
                 </a>
 
                 {{-- Manage Quizzes --}}

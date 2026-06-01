@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use App\Services\NotificationService;
 
 class AdminBlogController extends Controller
 {
@@ -259,6 +260,15 @@ class AdminBlogController extends Controller
                 $blogService = app(\App\Services\BlogService::class);
                 $xpAwarded = $blogService->awardBlogXp($blog);
             });
+
+            // 3. Send notifications to the blog author
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyBlogApproved($blog);
+            $notificationService->notifyXpEarned(
+                User::findOrFail($blog->user_id),
+                $xpAwarded,
+                'blog'
+            );
 
             return back()->with('success', "Blog approved! Author awarded {$xpAwarded} XP.");
 

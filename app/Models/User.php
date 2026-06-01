@@ -55,6 +55,7 @@ class User extends Authenticatable
             'xp' => 'integer',
             'level' => 'integer',
             'total_point' => 'integer',
+            'last_seen_at' => 'datetime',
         ];
     }
 
@@ -82,6 +83,13 @@ class User extends Authenticatable
             $this->level >= 2 => 'Green Starter',
             default => 'Eco Beginner',
         };
+    }
+
+    // ── User Activity Helper ────────────────────────────────
+
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at && $this->last_seen_at->gt(now()->subMinutes(5));
     }
 
     // ── Relationships ────────────────────────────────────────
@@ -134,5 +142,15 @@ class User extends Authenticatable
     public function savedPosts(): BelongsToMany
     {
         return $this->belongsToMany(Post::class, 'post_saves')->withTimestamps();
+    }
+
+    public function appNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->latest();
+    }
+
+    public function unreadNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->where('is_read', false);
     }
 }
