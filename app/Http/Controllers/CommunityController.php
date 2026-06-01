@@ -90,7 +90,8 @@ class CommunityController extends Controller
     {
         $request->validate([
             'content' => ['required', 'string', 'min:1', 'max:2000'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'file', 'max:10240'], // Allow any file up to 10MB
+            'file' => ['nullable', 'file', 'max:10240'], // Allow general files up to 10MB
         ]);
 
         $data = [
@@ -101,6 +102,8 @@ class CommunityController extends Controller
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('posts', 'public');
+        } elseif ($request->hasFile('file')) {
+            $data['image'] = $request->file('file')->store('posts', 'public');
         }
 
         Post::create($data);

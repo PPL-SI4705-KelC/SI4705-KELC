@@ -2,7 +2,7 @@
     <x-slot name="title">Manage Quizzes</x-slot>
     <x-slot name="header">
         <div>
-            <h1 class="text-xl font-bold text-content">Quiz Management ❓</h1>
+            <h1 class="text-xl font-bold text-content">Quiz Management</h1>
             <p class="text-sm text-content-muted">Manage the daily climate questions pool</p>
         </div>
     </x-slot>

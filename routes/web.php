@@ -58,6 +58,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/posts/{post}/comments', [CommunityController::class, 'storeComment'])->name('posts.comments.store');
     Route::delete('/comments/{comment}', [CommunityController::class, 'destroyComment'])->name('comments.destroy');
 
+    // Smart Community Redirect (for chat button)
+    Route::get('/community-redirect', function () {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $joinedCommunity = \App\Models\Community::whereHas('members', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->first();
+
+        if ($joinedCommunity) {
+            return redirect()->route('community.show', $joinedCommunity);
+        }
+
+        return redirect()->route('community.index');
+    })->name('community.redirect');
+
     // Climate Journey Map
     Route::get('/journey', [JourneyController::class, 'index'])->name('journey.index');
 

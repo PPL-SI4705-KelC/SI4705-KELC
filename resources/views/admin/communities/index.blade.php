@@ -1,16 +1,11 @@
 <x-app-layout>
     <x-slot name="title">Community Management</x-slot>
 
-    <div class="space-y-8 animate-fade-in pb-10">
-        {{-- Header Section --}}
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="max-w-2xl">
-                <h1 class="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                    Community Management 👥
-                </h1>
-                <p class="text-sm text-gray-500 leading-relaxed mt-1.5">
-                    Oversee, edit, and moderate climate action communities. Monitor growth metrics and ensure adherence to environmental stewardship guidelines.
-                </p>
+    <x-slot name="header">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+            <div>
+                <h1 class="text-xl font-bold text-content">Community Management</h1>
+                <p class="text-sm text-content-muted">Oversee, edit, and moderate climate action communities</p>
             </div>
             <div>
                 <a href="{{ route('admin.communities.create') }}" class="inline-flex items-center justify-center gap-2 bg-[#2A5C4D] hover:bg-[#1e4237] text-white px-5 py-3 rounded-xl font-bold transition shadow-sm hover:shadow-md">
@@ -19,7 +14,9 @@
                 </a>
             </div>
         </div>
+    </x-slot>
 
+    <div class="space-y-8 animate-fade-in pb-10">
         {{-- Metrics Grid --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             {{-- Card 1: Total Communities --}}

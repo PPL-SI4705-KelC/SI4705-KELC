@@ -330,7 +330,9 @@
             if (textTools && !textTools.querySelector("[data-trix-attribute='underline']")) {
                 const underlineBtn = `
                     <button type="button" class="trix-button trix-button--icon trix-button--icon-underline" data-trix-attribute="underline" data-trix-key="u" title="Underline" tabindex="-1">
-                        <span class="underline font-serif font-bold text-xs" style="text-decoration: underline;">U</span>
+                        <svg class="w-3.5 h-3.5 mx-auto" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin: auto;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75v5.25a5.25 5.25 0 1 1-10.5 0V6.75m2.25 13.5h6" />
+                        </svg>
                     </button>
                 `;
                 const italicBtn = textTools.querySelector("[data-trix-attribute='italic']");
