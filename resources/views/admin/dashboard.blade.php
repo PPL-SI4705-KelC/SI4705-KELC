@@ -109,14 +109,6 @@
                         </div>
                         <p class="text-xs font-semibold text-content leading-tight">Leaderboard</p>
                     </a>
-
-                    {{-- Add Action (Dashed) --}}
-                    <div class="p-5 rounded-2xl bg-white border border-dashed border-gray-200 text-center flex flex-col items-center justify-center cursor-not-allowed opacity-60">
-                      <div class="w-12 h-12 rounded-full bg-white border border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-3 shrink-0">
-                          <span class="text-lg font-bold">+</span>
-                      </div>
-                      <p class="text-xs font-semibold text-gray-400 leading-tight">Add Action</p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -144,59 +136,4 @@
         </div>
     </div>
 
-    {{-- Bottom Section: Regional Carbon Tracking & Platform Health --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
-        {{-- Regional Carbon Tracking (2/3 width) --}}
-        <div class="lg:col-span-2 relative rounded-2xl overflow-hidden min-h-[240px] flex flex-col justify-between p-6 text-white border border-surface-border">
-            {{-- Background Image --}}
-            <div class="absolute inset-0 z-0 select-none">
-                <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1200" alt="" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-transparent"></div>
-            </div>
-
-            <div class="relative z-10 max-w-md mt-2">
-                <h3 class="text-xl font-bold tracking-tight text-white leading-tight">Regional Carbon Tracking</h3>
-                <p class="text-white/80 text-xs mt-2 leading-relaxed">
-                    Monitoring the reduction of greenhouse gases across global pilot communities. Data refreshed every 24 hours.
-                </p>
-            </div>
-
-            <div class="relative z-10 flex gap-12 mt-6">
-                <div>
-                    <p class="text-[10px] text-white/50 font-bold uppercase tracking-wider">Reduction</p>
-                    <p class="text-2xl font-bold text-white mt-1">-12.4%</p>
-                </div>
-                <div>
-                    <p class="text-[10px] text-white/50 font-bold uppercase tracking-wider">Target</p>
-                    <p class="text-2xl font-bold text-white mt-1">25.0%</p>
-                </div>
-            </div>
-        </div>
-
-        {{-- Platform Health (1/3 width) --}}
-        <div class="bg-primary rounded-2xl p-6 text-white border border-primary-700 shadow-card flex flex-col justify-between min-h-[240px]">
-            <div class="space-y-4">
-                <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0">
-                    <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2z"></path>
-                        <path d="M9 22v-4"></path>
-                    </svg>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-bold tracking-tight text-white leading-tight">Platform Health</h3>
-                    <p class="text-white/80 text-xs mt-2 leading-relaxed">
-                        All systems are operational. Data nodes synchronized globally.
-                    </p>
-                </div>
-            </div>
-
-            <div class="mt-6 space-y-2">
-                <div class="progress-bar bg-white/20">
-                    <div class="progress-fill bg-white" style="width: 98.9%"></div>
-                </div>
-                <p class="text-[10px] font-bold text-white uppercase tracking-widest">98.9% UPTIME</p>
-            </div>
-        </div>
-    </div>
 </x-app-layout>

@@ -1,4 +1,5 @@
 <x-guest-layout>
+    <x-slot name="title">Register</x-slot>
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-content">Create account</h1>
         <p class="text-sm text-content-muted mt-1">Join Act4Climate and start tracking your impact</p>

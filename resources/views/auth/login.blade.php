@@ -1,4 +1,5 @@
 <x-guest-layout>
+    <x-slot name="title">Login</x-slot>
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-content">Welcome back</h1>
         <p class="text-sm text-content-muted mt-1">Login to continue your climate journey</p>

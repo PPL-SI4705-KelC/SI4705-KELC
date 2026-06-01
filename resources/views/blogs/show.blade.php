@@ -32,8 +32,8 @@
             </div>
         </div>
 
-        <div class="prose prose-green max-w-none mt-6 text-content-body leading-relaxed break-words">
-            {!! nl2br(e($blog->content)) !!}
+        <div class="trix-content max-w-none mt-6 text-content-body leading-relaxed break-words">
+            {!! $blog->content !!}
         </div>
     </article>
 </x-app-layout>
