@@ -110,7 +110,6 @@
                 <input id="content" type="hidden" name="content" value="{{ old('content') }}">
                 <trix-editor input="content"
                              x-ref="trixEditor"
-                             @trix-change="contentText = $refs.trixEditor.editor.toString()"
                              class="form-input trix-content font-sans text-sm leading-relaxed min-h-[350px] bg-white border border-gray-200 rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]/20 focus:border-[#2D5A4C]"
                              placeholder="Start writing your blog post here... Share your story, insights, and ideas with your readers."></trix-editor>
 
@@ -376,11 +375,21 @@
                 isDragging: false,
 
                 init() {
+                    const trix = this.$refs.trixEditor;
+
+                    // Set initial value once Trix has booted
                     this.$nextTick(() => {
-                        if (this.$refs.trixEditor && this.$refs.trixEditor.editor) {
-                            this.contentText = this.$refs.trixEditor.editor.toString();
+                        if (trix && trix.editor) {
+                            this.contentText = trix.editor.toString();
                         }
                     });
+
+                    // Real-time tracking: update on every editor change (typing, paste, formatting)
+                    if (trix) {
+                        trix.addEventListener('trix-change', () => {
+                            this.contentText = trix.editor ? trix.editor.toString() : '';
+                        });
+                    }
                 },
 
                 get wordCount() {
