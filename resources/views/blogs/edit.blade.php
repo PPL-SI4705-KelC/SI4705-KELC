@@ -379,6 +379,10 @@
         trix-toolbar .trix-button-group--file-tools {
             display: none !important;
         }
+        trix-toolbar .trix-button--icon-increase-nesting-level,
+        trix-toolbar .trix-button--icon-decrease-nesting-level {
+            display: none !important;
+        }
         trix-editor {
             min-height: 350px !important;
             background-color: #fff !important;

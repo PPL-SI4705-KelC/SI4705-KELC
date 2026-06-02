@@ -114,7 +114,11 @@
                         <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false">
                             <button @click="open = !open" class="flex items-center gap-2 bg-white rounded-full p-1.5 pr-4 border border-gray-200 shadow-sm hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/20">
                                 <div class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=E2E8F0&color=2A5C4D" alt="Avatar" class="w-full h-full object-cover">
+                                    @if(Auth::user()->avatar)
+                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                                    @else
+                                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=E2E8F0&color=2A5C4D" alt="Avatar" class="w-full h-full object-cover">
+                                    @endif
                                 </div>
                                 <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                             </button>
@@ -133,7 +137,11 @@
                                 <!-- User Info Header -->
                                 <div class="flex items-center gap-3 mb-4 cursor-pointer" @click="open = false">
                                     <div class="w-10 h-10 rounded-full overflow-hidden shrink-0">
-                                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=E2E8F0&color=2A5C4D" alt="Avatar" class="w-full h-full object-cover">
+                                        @if(Auth::user()->avatar)
+                                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                                        @else
+                                            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=E2E8F0&color=2A5C4D" alt="Avatar" class="w-full h-full object-cover">
+                                        @endif
                                     </div>
                                     <div class="overflow-hidden">
                                         <p class="text-[13px] font-bold text-gray-900 truncate">{{ '@' . strtolower(str_replace(' ', '', Auth::user()->name)) }}</p>

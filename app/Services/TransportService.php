@@ -46,23 +46,30 @@ class TransportService
     {
         $emission = 0;
 
-        // 1. Main Vehicle (Car/Motorcycle)
-        $mainVehicle = $data['main_vehicle'] ?? 'none';
-        if ($mainVehicle !== 'none') {
-            $durationKey = $data['main_vehicle_duration'] ?? 'none';
-            $duration = self::DURATIONS[$durationKey] ?? 0;
-            $speed = self::SPEEDS[$mainVehicle] ?? 0;
-            
-            $factor = 0;
-            if ($mainVehicle === 'car') {
+        // 1. Main Vehicle(s) (Car/Motorcycle)
+        $mainVehicles = $data['main_vehicle'] ?? [];
+        if (!is_array($mainVehicles)) {
+            $mainVehicles = [$mainVehicles];
+        }
+
+        foreach ($mainVehicles as $vehicle) {
+            if ($vehicle === 'car') {
+                $durationKey = $data['car_duration'] ?? 'none';
+                $duration = self::DURATIONS[$durationKey] ?? 0;
+                $speed = self::SPEEDS['car'] ?? 0;
                 $type = $data['car_type'] ?? 'medium';
                 $factor = self::CAR_FACTORS[$type] ?? 0.20;
-            } elseif ($mainVehicle === 'motorcycle') {
+                
+                $emission += ($duration * $speed * $factor);
+            } elseif ($vehicle === 'motorcycle') {
+                $durationKey = $data['motorcycle_duration'] ?? 'none';
+                $duration = self::DURATIONS[$durationKey] ?? 0;
+                $speed = self::SPEEDS['motorcycle'] ?? 0;
                 $type = $data['motorcycle_type'] ?? 'gasoline';
                 $factor = self::MOTO_FACTORS[$type] ?? 0.10;
+                
+                $emission += ($duration * $speed * $factor);
             }
-            
-            $emission += ($duration * $speed * $factor);
         }
 
         // 2. Train

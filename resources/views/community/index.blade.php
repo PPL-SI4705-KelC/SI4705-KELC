@@ -2,8 +2,8 @@
     <x-slot name="title">Communities</x-slot>
     <x-slot name="header">
         <div>
-            <h1 class="text-xl font-bold text-content">Climate Communities 🌍</h1>
-            <p class="text-sm text-content-muted">Connect with eco-minded people</p>
+            <h1 class="text-2xl md:text-3xl font-black text-content">Climate Communities 🌍</h1>
+            <p class="text-base text-content-muted mt-1">Connect with eco-minded people</p>
         </div>
     </x-slot>
 

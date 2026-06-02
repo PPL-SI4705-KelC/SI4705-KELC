@@ -30,7 +30,7 @@ class AdminBlogController extends Controller
         $search = $request->get('search');
 
         // ── Admin's Own Blogs (Published + Draft tabs) ──────────
-        $query = Blog::query()->with('user:id,name,username');
+        $query = Blog::query()->with('user:id,name,username,avatar');
 
         // Filter by tab
         if ($tab === 'published') {
@@ -54,7 +54,8 @@ class AdminBlogController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('short_description', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                  ->orWhere('content', 'like', "%{$search}%")
+                  ->orWhere('tags', 'like', "%{$search}%");
             });
         }
 
@@ -78,7 +79,7 @@ class AdminBlogController extends Controller
         // ── Pending User Submissions ────────────────────────────
         $pendingBlogs = Blog::where('status', Blog::STATUS_PENDING)
             ->whereHas('user', fn ($q) => $q->where('role', 'user'))
-            ->with('user:id,name,username,bio')
+            ->with('user:id,name,username,bio,avatar')
             ->latest()
             ->get();
 

@@ -20,7 +20,7 @@ class StoreBlogRequest extends FormRequest
             'short_description' => ['nullable', 'string', 'min:10', 'max:500'],
             'content' => ['required', 'string', 'min:300', 'max:10000'],
             'category' => ['required', Rule::in(Blog::categories())],
-            'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
             'tags' => ['nullable', 'string', 'max:255'],
         ];
     }

@@ -30,6 +30,9 @@ class User extends Authenticatable
         'avatar',
         'bio',
         'total_point',
+        'telp',
+        'city',
+        'postal_code',
     ];
 
     /**

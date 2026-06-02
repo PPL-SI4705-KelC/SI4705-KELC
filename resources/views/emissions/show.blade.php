@@ -60,10 +60,10 @@
 
             <!-- Title & Subtitle -->
             <h1 class="text-4xl md:text-5xl font-black mb-4 {{ $isOver ? 'text-red-500' : 'text-[#2D5A4C]' }} tracking-tight">
-                {{ $isOver ? "Oh No! You're Over Target!" : "Great Job! You're On Target!" }}
+                {{ $isOver ? "Oh No! You're Over the Safe Limit!" : "Great Job! You're Within the Safe Limit!" }}
             </h1>
             <p class="text-gray-500 max-w-2xl mx-auto mb-10 text-sm md:text-base leading-relaxed">
-                Your current carbon footprint {{ $isOver ? 'exceeds' : 'is below' }} the sustainable target. The average person should aim for 5-8.2 kg of CO₂ per day to combat climate change effectively. Your actions today shape tomorrow's climate.
+                Your current carbon footprint {{ $isOver ? 'exceeds' : 'is below' }} the sustainable safe limit. The average person should aim for 5-8.2 kg of CO₂ per day to combat climate change effectively. Your actions today shape tomorrow's climate.
             </p>
 
             <!-- Main Impact Card -->
@@ -72,36 +72,43 @@
                     <div class="flex-1 text-center md:text-left md:border-r border-gray-100 pb-6 md:pb-0 md:pr-8">
                         <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Your Total Carbon Footprint</p>
                         <div class="flex items-baseline justify-center md:justify-start gap-2">
-                            <span class="text-6xl md:text-7xl font-black {{ $isOver ? 'text-red-500' : 'text-[#2D5A4C]' }} tracking-tighter">{{ number_format($dailyKg, 1) }}</span>
+                            <span class="text-6xl md:text-7xl font-black {{ $isOver ? 'text-red-500' : 'text-[#2D5A4C]' }} tracking-tighter">{{ number_format($dailyKg, 2) }}</span>
                             <span class="text-xl md:text-2xl font-bold text-gray-500">kg</span>
                         </div>
                         <p class="text-gray-400 text-sm mt-1 font-medium">CO₂ per day</p>
                     </div>
                     <div class="flex-1 text-center md:text-right">
                         <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                            {{ $isOver ? 'Above Target' : 'Of Target' }}
+                            {{ $isOver ? 'Above Safe Limit' : 'Within Safe Limit' }}
                         </p>
                         <div class="text-5xl md:text-6xl font-black text-orange-400 tracking-tighter mb-1">
-                            {{ number_format($percentOfTarget, 0) }}%
+                            {{ number_format($dailyKg / $target, 1) }}x
                         </div>
-                        <p class="text-gray-400 text-sm font-medium">of recommended limit</p>
+                        <p class="text-gray-400 text-sm font-medium">the recommended limit</p>
                     </div>
                 </div>
 
                 <!-- Progress Bar -->
-                <div class="relative pt-6">
-                    <div class="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex shadow-inner">
-                        <!-- Gradient fill -->
-                        <div class="h-full rounded-full bg-gradient-to-r from-green-300 via-yellow-400 to-red-400" style="width: {{ min(100, ($dailyKg / 25) * 100) }}%"></div>
+                <div class="relative pt-6 pb-2">
+                    <div class="h-4 w-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 rounded-full shadow-inner relative">
+                        <!-- Target Line Marker (8.2 kg) -->
+                        <div class="absolute top-0 bottom-0 border-l-2 border-dashed border-gray-800/40 z-10" style="left: {{ (8.2 / 25) * 100 }}%;"></div>
+                        
+                        <!-- User's Position Marker -->
+                        <div class="absolute top-1/2 w-5 h-5 bg-white rounded-full shadow-md border-4 border-gray-900 transition-all duration-1000 z-20" 
+                             style="left: {{ min(100, max(0, ($dailyKg / 25) * 100)) }}%; transform: translate(-50%, -50%);">
+                             <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow text-center whitespace-nowrap">
+                                 You: {{ number_format($dailyKg, 1) }}
+                                 <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                             </div>
+                        </div>
                     </div>
-                    <!-- Markers -->
-                    <div class="flex justify-between text-[10px] md:text-[11px] font-bold text-gray-400 mt-4 uppercase tracking-widest">
+                    <!-- Labels -->
+                    <div class="flex justify-between text-[10px] md:text-[11px] font-bold text-gray-400 mt-3 uppercase tracking-widest relative">
                         <span>0 kg</span>
-                        <span class="text-gray-800">Target: 8.2 kg</span>
+                        <span class="absolute text-gray-700" style="left: {{ (8.2 / 25) * 100 }}%; transform: translateX(-50%);">Safe Limit (8.2)</span>
                         <span>25+ kg</span>
                     </div>
-                    <!-- Visual Target Line Marker -->
-                    <div class="absolute top-5 bottom-8 border-l-2 border-gray-800/20" style="left: 30%;"></div>
                 </div>
             </div>
 
@@ -130,7 +137,7 @@
                     </p>
                     <div class="flex justify-between items-baseline border-b-2 border-gray-100 pb-3 mb-5">
                         <span class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">Carbon Output</span>
-                        <span class="text-base font-black text-blue-600">{{ number_format($tKg, 1) }} kg/day</span>
+                        <span class="text-base font-black text-blue-600">{{ number_format($tKg, 2) }} kg/day</span>
                     </div>
                     <div class="bg-blue-50/80 rounded-2xl p-4 mt-auto">
                         <p class="text-xs font-black text-blue-800 flex items-center gap-1.5 mb-2 uppercase tracking-wide">
@@ -158,7 +165,7 @@
                     </p>
                     <div class="flex justify-between items-baseline border-b-2 border-gray-100 pb-3 mb-5">
                         <span class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">Carbon Output</span>
-                        <span class="text-base font-black text-yellow-600">{{ number_format($eKg, 1) }} kg/day</span>
+                        <span class="text-base font-black text-yellow-600">{{ number_format($eKg, 2) }} kg/day</span>
                     </div>
                     <div class="bg-yellow-50/80 rounded-2xl p-4 mt-auto">
                         <p class="text-xs font-black text-yellow-800 flex items-center gap-1.5 mb-2 uppercase tracking-wide">
@@ -187,7 +194,7 @@
                     </p>
                     <div class="flex justify-between items-baseline border-b-2 border-gray-100 pb-3 mb-5">
                         <span class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">Carbon Output</span>
-                        <span class="text-base font-black text-[#2D5A4C]">{{ number_format($cKg, 1) }} kg/day</span>
+                        <span class="text-base font-black text-[#2D5A4C]">{{ number_format($cKg, 2) }} kg/day</span>
                     </div>
                     <div class="bg-[#2D5A4C]/10 rounded-2xl p-4 mt-auto">
                         <p class="text-xs font-black text-[#2D5A4C] flex items-center gap-1.5 mb-2 uppercase tracking-wide">

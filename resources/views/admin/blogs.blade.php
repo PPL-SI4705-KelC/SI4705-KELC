@@ -70,7 +70,7 @@
             {{-- Search Bar --}}
             <form method="GET" action="{{ route('admin.blogs.index') }}" class="flex gap-2 w-full max-w-sm mb-3 md:mb-0" id="blog-search-form">
                 <input type="hidden" name="tab" value="{{ $tab }}">
-                <input type="text" name="search" value="{{ $search }}" placeholder="Search title or content..." class="form-input py-2 text-xs" id="search-input">
+                <input type="text" name="search" value="{{ $search }}" placeholder="Search title, content, or tags..." class="form-input py-2 text-xs" id="search-input">
                 <button type="submit" class="btn-primary text-xs px-4" id="btn-search">Search</button>
                 @if($search)
                     <a href="{{ route('admin.blogs.index', ['tab' => $tab]) }}" class="btn-ghost text-xs px-2.5 flex items-center justify-center border border-gray-200" id="btn-reset-search">Reset</a>
@@ -159,7 +159,11 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full overflow-hidden border border-white shadow-sm shrink-0 bg-[#e2f0ea] flex items-center justify-center">
-                            <span class="text-[#2D5A4C] text-xs font-bold">{{ strtoupper(substr($pending->user->name ?? 'U', 0, 2)) }}</span>
+                            @if($pending->user && $pending->user->avatar)
+                                <img src="{{ asset('storage/' . $pending->user->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                            @else
+                                <span class="text-[#2D5A4C] text-xs font-bold">{{ strtoupper(substr($pending->user->name ?? 'U', 0, 2)) }}</span>
+                            @endif
                         </div>
                         <div>
                             <p class="text-sm font-extrabold text-gray-900 leading-snug">{{ $pending->user->name }}</p>

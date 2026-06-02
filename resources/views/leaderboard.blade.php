@@ -67,7 +67,11 @@
                             <td class="py-4 px-6">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm shrink-0">
+                                    @if($player->avatar)
+                                        <img src="{{ asset('storage/' . $player->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                                    @else
                                         <img src="https://ui-avatars.com/api/?name={{ urlencode($player->name) }}&background=E2E8F0&color=2D5A4C" alt="Avatar" class="w-full h-full object-cover">
+                                    @endif
                                     </div>
                                     <div>
                                         <span class="font-bold text-gray-900 flex items-center gap-1.5">
