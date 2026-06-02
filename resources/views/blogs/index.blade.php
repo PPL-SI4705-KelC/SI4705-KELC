@@ -2,7 +2,7 @@
     <x-slot name="title">Blogs</x-slot>
     <x-slot name="header">
         <div>
-            <h1 class="text-xl font-bold text-content">Climate Blog 📝</h1>
+            <h1 class="text-xl font-bold text-content">Climate Blog</h1>
             <p class="text-sm text-content-muted">Read and share climate stories</p>
         </div>
         <div class="flex gap-2">

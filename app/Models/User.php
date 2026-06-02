@@ -56,6 +56,8 @@ class User extends Authenticatable
             'level' => 'integer',
             'total_point' => 'integer',
             'last_seen_at' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 
