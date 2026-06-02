@@ -110,14 +110,16 @@
                 <input id="content" type="hidden" name="content" value="{{ old('content') }}">
                 <trix-editor input="content"
                              x-ref="trixEditor"
+                             @trix-change="updateContentText"
+                             @keyup="updateContentText"
                              class="form-input trix-content font-sans text-sm leading-relaxed min-h-[350px] bg-white border border-gray-200 rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]/20 focus:border-[#2D5A4C]"
                              placeholder="Start writing your blog post here... Share your story, insights, and ideas with your readers."></trix-editor>
 
                 <div class="flex justify-between mt-1.5">
-                    <p class="text-[11px] font-medium" :class="contentText.length >= 300 && contentText.length <= 10000 ? 'text-gray-400' : 'text-red-500'">
-                        Character Range: 300 - 10,000 (Current: <span x-text="contentText.length"></span> characters)
+                    <p class="text-[11px] font-medium" :class="charCount >= 300 && charCount <= 10000 ? 'text-gray-400' : 'text-red-500'">
+                        Character Range: 300 - 10,000 (Current: <span x-text="charCount"></span> characters)
                     </p>
-                    <p class="text-[11px] text-gray-400 font-medium"><span x-text="wordCount"></span> words</p>
+                    <p class="text-[11px] text-gray-400 font-medium"><span x-text="wordCount"></span> <span x-text="wordCount === 1 ? 'word' : 'words'"></span></p>
                 </div>
                 <x-input-error :messages="$errors->get('content')" class="mt-1.5" />
             </div>
@@ -375,26 +377,30 @@
                 isDragging: false,
 
                 init() {
-                    const trix = this.$refs.trixEditor;
-
-                    // Set initial value once Trix has booted
                     this.$nextTick(() => {
-                        if (trix && trix.editor) {
-                            this.contentText = trix.editor.toString();
-                        }
+                        this.updateContentText();
                     });
+                },
 
-                    // Real-time tracking: update on every editor change (typing, paste, formatting)
-                    if (trix) {
-                        trix.addEventListener('trix-change', () => {
-                            this.contentText = trix.editor ? trix.editor.toString() : '';
-                        });
+                updateContentText() {
+                    if (this.$refs.trixEditor && this.$refs.trixEditor.editor) {
+                        let text = this.$refs.trixEditor.editor.getDocument().toString();
+                        if (text.endsWith('\n')) {
+                            text = text.slice(0, -1);
+                        }
+                        this.contentText = text;
                     }
+                },
+
+                get charCount() {
+                    return this.contentText.length;
                 },
 
                 get wordCount() {
                     if (!this.contentText) return 0;
-                    return this.contentText.trim().split(/\s+/).filter(w => w.length > 0).length;
+                    const text = this.contentText.trim();
+                    if (text.length === 0) return 0;
+                    return text.split(/\s+/).length;
                 },
 
                 handleFileSelect(event) {

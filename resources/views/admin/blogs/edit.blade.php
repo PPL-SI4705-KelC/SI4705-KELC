@@ -115,15 +115,16 @@
                 <input id="content" type="hidden" name="content" value="{{ old('content', $blog->content) }}">
                 <trix-editor input="content"
                              x-ref="trixEditor"
-                             @trix-change="contentText = $refs.trixEditor.editor.toString()"
-                             class="form-input trix-content font-sans text-sm leading-relaxed min-h-[350px] bg-white border border-gray-200 rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D]"
+                             @trix-change="updateContentText"
+                             @keyup="updateContentText"
+                             class="form-input trix-content font-sans text-sm leading-relaxed min-h-[350px] bg-white border border-gray-200 rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]/20 focus:border-[#2D5A4C]"
                              placeholder="Start writing your blog post here... Share your story, insights, and ideas with your readers."></trix-editor>
 
                 <div class="flex justify-between mt-1.5">
-                    <p class="text-[11px] font-medium" :class="contentText.length >= 300 && contentText.length <= 10000 ? 'text-gray-400' : 'text-red-500'">
-                        Character Range: 300 - 10,000 (Current: <span x-text="contentText.length"></span> characters)
+                    <p class="text-[11px] font-medium" :class="charCount >= 300 && charCount <= 10000 ? 'text-gray-400' : 'text-red-500'">
+                        Character Range: 300 - 10,000 (Current: <span x-text="charCount"></span> characters)
                     </p>
-                    <p class="text-[11px] text-gray-400 font-medium"><span x-text="wordCount"></span> words</p>
+                    <p class="text-[11px] text-gray-400 font-medium"><span x-text="wordCount"></span> <span x-text="wordCount === 1 ? 'word' : 'words'"></span></p>
                 </div>
                 <x-input-error :messages="$errors->get('content')" class="mt-1.5" />
             </div>
@@ -393,15 +394,29 @@
 
                 init() {
                     this.$nextTick(() => {
-                        if (this.$refs.trixEditor && this.$refs.trixEditor.editor) {
-                            this.contentText = this.$refs.trixEditor.editor.toString();
-                        }
+                        this.updateContentText();
                     });
+                },
+
+                updateContentText() {
+                    if (this.$refs.trixEditor && this.$refs.trixEditor.editor) {
+                        let text = this.$refs.trixEditor.editor.getDocument().toString();
+                        if (text.endsWith('\n')) {
+                            text = text.slice(0, -1);
+                        }
+                        this.contentText = text;
+                    }
+                },
+
+                get charCount() {
+                    return this.contentText.length;
                 },
 
                 get wordCount() {
                     if (!this.contentText) return 0;
-                    return this.contentText.trim().split(/\s+/).filter(w => w.length > 0).length;
+                    const text = this.contentText.trim();
+                    if (text.length === 0) return 0;
+                    return text.split(/\s+/).length;
                 },
 
                 handleFileSelect(event) {
