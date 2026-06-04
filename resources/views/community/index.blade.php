@@ -1,6 +1,12 @@
 <x-app-layout>
     <x-slot name="title">Communities</x-slot>
     <x-slot name="header">
+        <div class="mb-5">
+            <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2D5A4C] text-[#2D5A4C] hover:bg-[#2D5A4C] hover:text-white transition-all duration-200 text-sm font-bold w-fit">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to Dashboard
+            </a>
+        </div>
         <div>
             <h1 class="text-2xl md:text-3xl font-black text-content">Climate Communities 🌍</h1>
             <p class="text-base text-content-muted mt-1">Connect with eco-minded people</p>

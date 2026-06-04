@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Blog;
+use App\Models\Comment;
 use App\Models\Community;
 use App\Models\Notification;
 use App\Models\Post;
@@ -98,6 +99,32 @@ class NotificationService
             'message' => $commenter->name . ' commented on your post in "' . $communityName . '".',
             'icon'    => '💬',
             'link'    => $post->community_id ? route('community.show', $post->community_id) : null,
+        ]);
+    }
+
+    /**
+     * Notify a user that they were @mentioned in a comment.
+     * Skips if the mentioner is the mentioned user.
+     */
+    public function notifyMentioned(User $mentioned, User $mentioner, Comment $comment, Post $post): void
+    {
+        if ($mentioned->id === $mentioner->id) {
+            return;
+        }
+
+        $excerpt = mb_strlen($comment->content) > 60
+            ? mb_substr($comment->content, 0, 60) . '…'
+            : $comment->content;
+
+        Notification::create([
+            'user_id' => $mentioned->id,
+            'type'    => 'mentioned',
+            'title'   => 'You were mentioned',
+            'message' => '@' . $mentioner->username . ' mentioned you: "' . $excerpt . '"',
+            'icon'    => '🔔',
+            'link'    => $post->community_id
+                ? route('community.show', $post->community_id) . '#post-' . $post->id
+                : null,
         ]);
     }
 }
