@@ -1,5 +1,26 @@
 <x-app-layout>
+    <x-slot name="title">Dashboard</x-slot>
     <div class="w-full space-y-6" x-data="{ showLearnMoreModal: false }">
+        
+        @if (session('success'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" 
+             x-transition:enter="ease-out duration-300 transition" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="ease-in duration-200 transition" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-4"
+             class="bg-[#f0f9f5] border border-[#d1e8df] rounded-2xl p-4 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-[#2A5C4D] rounded-full flex items-center justify-center text-white shrink-0 shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-gray-900 leading-tight">Success!</h4>
+                    <p class="text-[13px] text-gray-600 font-medium mt-0.5">{{ session('success') }}</p>
+                </div>
+            </div>
+            <button type="button" @click="show = false" class="text-gray-400 hover:text-gray-600 transition p-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        @endif
         
         {{-- Hero Section --}}
         <div class="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden">
@@ -37,7 +58,7 @@
                     <span class="text-xs font-bold tracking-[0.1em] text-gray-500 uppercase">CARBON FOOTPRINT</span>
                 </div>
                 <div class="flex items-baseline gap-3 z-10">
-                    <span class="text-[80px] font-black text-[#2A5C4D] leading-none tracking-tight">{{ number_format($totalEmissions, 1) }}</span>
+                    <span class="text-[80px] font-black text-[#2A5C4D] leading-none tracking-tight">{{ number_format($totalEmissions, 2) }}</span>
                     <span class="text-2xl font-bold text-gray-900">Kg</span>
                 </div>
                 <div class="flex items-center gap-1.5 mt-4 z-10">
@@ -88,7 +109,7 @@
                     </div>
                     <div>
                         <p class="text-[13px] text-gray-500 font-semibold mb-0.5">Transport</p>
-                        <p class="text-base font-bold text-gray-900">{{ number_format($transportEmission, 1) }} kg CO₂</p>
+                        <p class="text-base font-bold text-gray-900">{{ number_format($transportEmission, 2) }} kg CO₂</p>
                     </div>
                 </div>
                 <div class="bg-[#f0f9f5] rounded-3xl p-5 flex items-center gap-5 border border-transparent hover:border-[#2A5C4D]/20 transition">
@@ -97,7 +118,7 @@
                     </div>
                     <div>
                         <p class="text-[13px] text-gray-500 font-semibold mb-0.5">Energy</p>
-                        <p class="text-base font-bold text-gray-900">{{ number_format($energyEmission, 1) }} kg CO₂</p>
+                        <p class="text-base font-bold text-gray-900">{{ number_format($energyEmission, 2) }} kg CO₂</p>
                     </div>
                 </div>
                 <div class="bg-[#f0f9f5] rounded-3xl p-5 flex items-center gap-5 border border-transparent hover:border-[#2A5C4D]/20 transition">
@@ -106,7 +127,7 @@
                     </div>
                     <div>
                         <p class="text-[13px] text-gray-500 font-semibold mb-0.5">Food</p>
-                        <p class="text-base font-bold text-gray-900">{{ number_format($foodEmission, 1) }} kg CO₂</p>
+                        <p class="text-base font-bold text-gray-900">{{ number_format($foodEmission, 2) }} kg CO₂</p>
                     </div>
                 </div>
             </div>
@@ -146,7 +167,11 @@
                             {{ $rank }}
                         </div>
                         <div class="w-[46px] h-[46px] rounded-full bg-gray-200 overflow-hidden border-[3px] border-white shadow-sm shrink-0">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode($player->name) }}&background=E2E8F0&color=475569" alt="Avatar" class="w-full h-full object-cover">
+                            @if($player->avatar)
+                                <img src="{{ asset('storage/' . $player->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                            @else
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($player->name) }}&background=E2E8F0&color=475569" alt="Avatar" class="w-full h-full object-cover">
+                            @endif
                         </div>
                         <div>
                             <p class="text-[15px] font-bold text-gray-900">{{ $isCurrentUser ? 'You' : $player->name }}</p>

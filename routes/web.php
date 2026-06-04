@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmissionController;
 use App\Http\Controllers\JourneyController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\QuizController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,23 +51,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Community
     Route::get('/community', [CommunityController::class, 'index'])->name('community.index');
     Route::get('/community/{community}', [CommunityController::class, 'show'])->name('community.show');
+    Route::get('/community/{community}/sidebar', [CommunityController::class, 'sidebarStatus'])->name('community.sidebar');
     Route::post('/community/{community}/join', [CommunityController::class, 'join'])->name('community.join');
     Route::post('/community/{community}/leave', [CommunityController::class, 'leave'])->name('community.leave');
     Route::post('/community/{community}/posts', [CommunityController::class, 'storePost'])->name('community.posts.store');
     Route::post('/posts/{post}/like', [CommunityController::class, 'toggleLike'])->name('posts.like');
     Route::post('/posts/{post}/save', [CommunityController::class, 'toggleSave'])->name('posts.save');
     Route::post('/posts/{post}/comments', [CommunityController::class, 'storeComment'])->name('posts.comments.store');
-    Route::post('/posts/{post}/comments/ajax', [CommunityController::class, 'storeCommentAjax'])->name('posts.comments.store.ajax');
     Route::delete('/comments/{comment}', [CommunityController::class, 'destroyComment'])->name('comments.destroy');
 
-    // Hashtag autocomplete (JSON — used by Alpine.js fetch in posting bar)
-    Route::get('/hashtags/suggest', [CommunityController::class, 'hashtagSuggest'])->name('hashtags.suggest');
+    // Smart Community Redirect (for chat button)
+    Route::get('/community-redirect', function () {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $joinedCommunity = \App\Models\Community::whereHas('members', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->first();
+
+        if ($joinedCommunity) {
+            return redirect()->route('community.show', $joinedCommunity);
+        }
+
+        return redirect()->route('community.index');
+    })->name('community.redirect');
 
     // Climate Journey Map
     Route::get('/journey', [JourneyController::class, 'index'])->name('journey.index');
 
     // Leaderboard
     Route::get('/leaderboard', [DashboardController::class, 'leaderboard'])->name('leaderboard');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
 });
 
 // ── Admin Routes ─────────────────────────────────────────────
@@ -101,6 +119,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
     Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
+    Route::get('/users/create', [AdminDashboardController::class, 'createUser'])->name('users.create');
+    Route::post('/users', [AdminDashboardController::class, 'storeUser'])->name('users.store');
+    Route::get('/users/{user}/edit', [AdminDashboardController::class, 'editUser'])->name('users.edit');
+    Route::put('/users/{user}', [AdminDashboardController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [AdminDashboardController::class, 'destroyUser'])->name('users.destroy');
     Route::get('/leaderboard', [AdminDashboardController::class, 'leaderboard'])->name('leaderboard');
 });
 

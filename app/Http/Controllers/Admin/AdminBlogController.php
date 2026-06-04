@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use App\Services\NotificationService;
 
 class AdminBlogController extends Controller
 {
@@ -29,7 +30,7 @@ class AdminBlogController extends Controller
         $search = $request->get('search');
 
         // ── Admin's Own Blogs (Published + Draft tabs) ──────────
-        $query = Blog::query()->with('user:id,name,username');
+        $query = Blog::query()->with('user:id,name,username,avatar');
 
         // Filter by tab
         if ($tab === 'published') {
@@ -53,7 +54,8 @@ class AdminBlogController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('short_description', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                  ->orWhere('content', 'like', "%{$search}%")
+                  ->orWhere('tags', 'like', "%{$search}%");
             });
         }
 
@@ -77,7 +79,7 @@ class AdminBlogController extends Controller
         // ── Pending User Submissions ────────────────────────────
         $pendingBlogs = Blog::where('status', Blog::STATUS_PENDING)
             ->whereHas('user', fn ($q) => $q->where('role', 'user'))
-            ->with('user:id,name,username,bio')
+            ->with('user:id,name,username,bio,avatar')
             ->latest()
             ->get();
 
@@ -246,37 +248,28 @@ class AdminBlogController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($blog) {
+            $xpAwarded = 0;
+
+            DB::transaction(function () use ($blog, &$xpAwarded) {
                 // 1. Change status to published
                 $blog->update([
                     'status'        => Blog::STATUS_PUBLISHED,
                     'reject_reason' => null,
                 ]);
 
-                // 2. Calculate XP for the author
-                $author = User::findOrFail($blog->user_id);
-
-                // Count how many published blogs the author now has (including this one)
-                $publishedCount = Blog::where('user_id', $author->id)
-                    ->where('status', Blog::STATUS_PUBLISHED)
-                    ->count();
-
-                // First published blog → 1000 XP, subsequent → 500 XP
-                $xpAmount = ($publishedCount === 1) ? 1000 : 500;
-
-                // 3. Award XP using GamificationService (handles XpLog and level ups)
-                $gamification = new \App\Services\GamificationService();
-                $gamification->awardXp($author, $xpAmount, 'blog', 'Published a blog: ' . $blog->title);
-
-                // Also increment total_point for legacy tracking if needed
-                $author->increment('total_point', $xpAmount);
+                // 2. Award XP via BlogService
+                $blogService = app(\App\Services\BlogService::class);
+                $xpAwarded = $blogService->awardBlogXp($blog);
             });
 
-            $author       = User::find($blog->user_id);
-            $publishedCount = Blog::where('user_id', $blog->user_id)
-                ->where('status', Blog::STATUS_PUBLISHED)
-                ->count();
-            $xpAwarded = ($publishedCount === 1) ? 1000 : 500;
+            // 3. Send notifications to the blog author
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyBlogApproved($blog);
+            $notificationService->notifyXpEarned(
+                User::findOrFail($blog->user_id),
+                $xpAwarded,
+                'blog'
+            );
 
             return back()->with('success', "Blog approved! Author awarded {$xpAwarded} XP.");
 

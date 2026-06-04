@@ -1,16 +1,11 @@
 <x-app-layout>
     <x-slot name="title">Community Management</x-slot>
 
-    <div class="space-y-8 animate-fade-in pb-10">
-        {{-- Header Section --}}
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="max-w-2xl">
-                <h1 class="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                    Community Management 👥
-                </h1>
-                <p class="text-sm text-gray-500 leading-relaxed mt-1.5">
-                    Oversee, edit, and moderate climate action communities. Monitor growth metrics and ensure adherence to environmental stewardship guidelines.
-                </p>
+    <x-slot name="header">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+            <div>
+                <h1 class="text-xl font-bold text-content">Community Management</h1>
+                <p class="text-sm text-content-muted">Oversee, edit, and moderate climate action communities</p>
             </div>
             <div>
                 <a href="{{ route('admin.communities.create') }}" class="inline-flex items-center justify-center gap-2 bg-[#2A5C4D] hover:bg-[#1e4237] text-white px-5 py-3 rounded-xl font-bold transition shadow-sm hover:shadow-md">
@@ -19,9 +14,11 @@
                 </a>
             </div>
         </div>
+    </x-slot>
 
+    <div class="space-y-8 animate-fade-in pb-10">
         {{-- Metrics Grid --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             {{-- Card 1: Total Communities --}}
             <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex items-center gap-4">
                 <div class="w-12 h-12 rounded-2xl bg-[#f0f9f5] flex items-center justify-center text-[#2A5C4D] shrink-0">
@@ -45,32 +42,6 @@
                 <div>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ACTIVE MEMBERS</p>
                     <p class="text-2xl font-black text-gray-900 mt-1">{{ $formattedMembers }}</p>
-                </div>
-            </div>
-
-            {{-- Card 3: Monthly Growth --}}
-            <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-[#f0f9f5] flex items-center justify-center text-[#2A5C4D] shrink-0">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">MONTHLY GROWTH</p>
-                    <p class="text-2xl font-black text-emerald-600 mt-1">+12.4%</p>
-                </div>
-            </div>
-
-            {{-- Card 4: Avg Engagement --}}
-            <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-[#f0f9f5] flex items-center justify-center text-[#2A5C4D] shrink-0">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">AVG. ENGAGEMENT</p>
-                    <p class="text-2xl font-black text-gray-900 mt-1">68%</p>
                 </div>
             </div>
         </div>

@@ -135,8 +135,104 @@ class AdminDashboardController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(20);
+        $users = $query->latest()->paginate(20)->withQueryString();
         return view('admin.users', compact('users'));
+    }
+
+    /**
+     * Show form to create new user.
+     */
+    public function createUser()
+    {
+        return view('admin.users.create');
+    }
+
+    /**
+     * Store new user.
+     */
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'role' => ['required', 'in:admin,user'],
+            'xp' => ['required', 'integer', 'min:0'],
+            'level' => ['required', 'integer', 'min:1'],
+            'bio' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        User::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'role' => $request->role,
+            'xp' => $request->xp,
+            'level' => $request->level,
+            'bio' => $request->bio,
+            'total_point' => 0,
+        ]);
+
+        return redirect()->route('admin.users')->with('success', 'User created successfully!');
+    }
+
+    /**
+     * Show form to edit user.
+     */
+    public function editUser(User $user)
+    {
+        return view('admin.users.edit', compact('user'));
+    }
+
+    /**
+     * Update user.
+     */
+    public function updateUser(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'password' => ['nullable', 'string', 'min:8'],
+            'role' => ['required', 'in:admin,user'],
+            'xp' => ['required', 'integer', 'min:0'],
+            'level' => ['required', 'integer', 'min:1'],
+            'bio' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'role' => $request->role,
+            'xp' => $request->xp,
+            'level' => $request->level,
+            'bio' => $request->bio,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('admin.users')->with('success', 'User updated successfully!');
+    }
+
+    /**
+     * Delete user.
+     */
+    public function destroyUser(User $user)
+    {
+        if ($user->id === Auth::id()) {
+            return redirect()->route('admin.users')->with('error', 'You cannot delete your own account.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users')->with('success', 'User deleted successfully.');
     }
 
     /**

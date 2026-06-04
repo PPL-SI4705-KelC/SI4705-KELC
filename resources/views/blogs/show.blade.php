@@ -25,15 +25,19 @@
         <h1 class="text-3xl font-bold text-content leading-tight">{{ $blog->title }}</h1>
 
         <div class="flex items-center gap-3 mt-4 pb-6 border-b border-surface-border">
-            <div class="avatar-primary">{{ substr($blog->user->name, 0, 2) }}</div>
+            @if($blog->user->avatar)
+                <img src="{{ asset('storage/' . $blog->user->avatar) }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover">
+            @else
+                <div class="avatar-primary">{{ substr($blog->user->name, 0, 2) }}</div>
+            @endif
             <div>
                 <p class="font-medium text-content">{{ $blog->user->name }}</p>
                 <p class="text-sm text-content-muted">{{ $blog->created_at?->format('d M Y') }} · Level {{ $blog->user->level }}</p>
             </div>
         </div>
 
-        <div class="prose prose-green max-w-none mt-6 text-content-body leading-relaxed break-words">
-            {!! nl2br(e($blog->content)) !!}
+        <div class="trix-content max-w-none mt-6 text-content-body leading-relaxed break-words">
+            {!! $blog->content !!}
         </div>
     </article>
 </x-app-layout>

@@ -3,8 +3,8 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
             <div>
-                <h1 class="text-[28px] font-black text-gray-900 tracking-tight leading-none">Blog Management</h1>
-                <p class="text-sm text-gray-400 font-medium mt-2">Create and manage your climate action content</p>
+                <h1 class="text-xl font-bold text-content">Blog Management</h1>
+                <p class="text-sm text-content-muted">Create and manage your climate action content</p>
             </div>
             <div>
                 <a href="{{ route('admin.blogs.create') }}" id="btn-add-new-blog" class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]">
@@ -70,7 +70,7 @@
             {{-- Search Bar --}}
             <form method="GET" action="{{ route('admin.blogs.index') }}" class="flex gap-2 w-full max-w-sm mb-3 md:mb-0" id="blog-search-form">
                 <input type="hidden" name="tab" value="{{ $tab }}">
-                <input type="text" name="search" value="{{ $search }}" placeholder="Search title or content..." class="form-input py-2 text-xs" id="search-input">
+                <input type="text" name="search" value="{{ $search }}" placeholder="Search title, content, or tags..." class="form-input py-2 text-xs" id="search-input">
                 <button type="submit" class="btn-primary text-xs px-4" id="btn-search">Search</button>
                 @if($search)
                     <a href="{{ route('admin.blogs.index', ['tab' => $tab]) }}" class="btn-ghost text-xs px-2.5 flex items-center justify-center border border-gray-200" id="btn-reset-search">Reset</a>
@@ -159,7 +159,11 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full overflow-hidden border border-white shadow-sm shrink-0 bg-[#e2f0ea] flex items-center justify-center">
-                            <span class="text-[#2D5A4C] text-xs font-bold">{{ strtoupper(substr($pending->user->name ?? 'U', 0, 2)) }}</span>
+                            @if($pending->user && $pending->user->avatar)
+                                <img src="{{ asset('storage/' . $pending->user->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                            @else
+                                <span class="text-[#2D5A4C] text-xs font-bold">{{ strtoupper(substr($pending->user->name ?? 'U', 0, 2)) }}</span>
+                            @endif
                         </div>
                         <div>
                             <p class="text-sm font-extrabold text-gray-900 leading-snug">{{ $pending->user->name }}</p>

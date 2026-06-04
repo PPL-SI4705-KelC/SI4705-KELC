@@ -9,38 +9,21 @@
     </x-slot>
 
     <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
-        {{-- Search and Current User Rank Widget --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {{-- Current User Rank Stats --}}
-            <div class="md:col-span-2 bg-[#f0f9f5] rounded-3xl p-6 border border-[#2D5A4C]/10 flex items-center justify-between shadow-sm">
-                <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-[#2D5A4C] text-white flex items-center justify-center font-black text-xl shadow-md">
-                        #{{ $user->rank }}
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Your Standing</h4>
-                        <p class="text-lg font-black text-[#2D5A4C] mt-0.5">{{ $user->name }}</p>
-                        <p class="text-xs font-semibold text-gray-500 mt-0.5">{{ $user->journey_title }} · Level {{ $user->level }}</p>
-                    </div>
+        {{-- Current User Rank Stats --}}
+        <div class="bg-[#f0f9f5] rounded-3xl p-6 border border-[#2D5A4C]/10 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-[#2D5A4C] text-white flex items-center justify-center font-black text-xl shadow-md">
+                    #{{ $user->rank }}
                 </div>
-                <div class="text-right">
-                    <p class="text-2xl font-black text-[#2D5A4C]">{{ number_format($user->xp) }}</p>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Total XP</p>
+                <div>
+                    <h4 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Your Standing</h4>
+                    <p class="text-lg font-black text-[#2D5A4C] mt-0.5">{{ $user->name }}</p>
+                    <p class="text-xs font-semibold text-gray-500 mt-0.5">{{ $user->journey_title }} · Level {{ $user->level }}</p>
                 </div>
             </div>
-
-            {{-- Search Box --}}
-            <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col justify-center">
-                <form method="GET" action="{{ route('leaderboard') }}" class="relative w-full">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name..." 
-                           class="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]/15 focus:border-[#2D5A4C] text-xs font-semibold shadow-inner transition">
-                    <button type="submit" class="absolute right-3 top-3 text-[#2D5A4C] hover:text-[#1a382e]">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    </button>
-                </form>
-                @if(request()->filled('search'))
-                    <a href="{{ route('leaderboard') }}" class="text-[10px] font-bold text-[#2D5A4C] hover:underline mt-2 text-center">Clear search filter</a>
-                @endif
+            <div class="text-right">
+                <p class="text-2xl font-black text-[#2D5A4C]">{{ number_format($user->xp) }}</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Total XP</p>
             </div>
         </div>
 
@@ -84,7 +67,11 @@
                             <td class="py-4 px-6">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm shrink-0">
+                                    @if($player->avatar)
+                                        <img src="{{ asset('storage/' . $player->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                                    @else
                                         <img src="https://ui-avatars.com/api/?name={{ urlencode($player->name) }}&background=E2E8F0&color=2D5A4C" alt="Avatar" class="w-full h-full object-cover">
+                                    @endif
                                     </div>
                                     <div>
                                         <span class="font-bold text-gray-900 flex items-center gap-1.5">
