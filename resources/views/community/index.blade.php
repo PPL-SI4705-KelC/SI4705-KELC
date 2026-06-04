@@ -8,8 +8,8 @@
             </a>
         </div>
         <div>
-            <h1 class="text-2xl md:text-3xl font-black text-content">Climate Communities 🌍</h1>
-            <p class="text-base text-content-muted mt-1">Connect with eco-minded people</p>
+            <h1 class="text-2xl md:text-3xl font-black text-content">Climate Communities</h1>
+            <p class="text-base text-content-muted mt-1 text-right">Connect with eco-minded people</p>
         </div>
     </x-slot>
 
