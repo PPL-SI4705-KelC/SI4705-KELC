@@ -56,9 +56,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/community/{community}/leave', [CommunityController::class, 'leave'])->name('community.leave');
     Route::post('/community/{community}/posts', [CommunityController::class, 'storePost'])->name('community.posts.store');
     Route::post('/posts/{post}/like', [CommunityController::class, 'toggleLike'])->name('posts.like');
-    Route::post('/posts/{post}/save', [CommunityController::class, 'toggleSave'])->name('posts.save');
+
     Route::post('/posts/{post}/comments', [CommunityController::class, 'storeComment'])->name('posts.comments.store');
     Route::delete('/comments/{comment}', [CommunityController::class, 'destroyComment'])->name('comments.destroy');
+    Route::get('/community/{community}/hashtags', [CommunityController::class, 'hashtagSuggestions'])->name('community.hashtags');
+    Route::get('/community/{community}/members', [CommunityController::class, 'memberSuggestions'])->name('community.members');
 
     // Smart Community Redirect (for chat button)
     Route::get('/community-redirect', function () {
