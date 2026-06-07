@@ -120,6 +120,33 @@ class AdminDashboardController extends Controller
     }
 
     /**
+     * Delete multiple quizzes.
+     */
+    public function bulkDestroyQuizzes(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No quiz questions selected for deletion.');
+        }
+
+        try {
+            $quizzes = Quiz::whereIn('id', $ids)->get();
+            $deletedCount = 0;
+            foreach ($quizzes as $quiz) {
+                $quiz->delete();
+                $deletedCount++;
+            }
+
+            return redirect()
+                ->route('admin.quizzes')
+                ->with('success', "{$deletedCount} quiz questions deleted successfully.");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('AdminDashboardController@bulkDestroyQuizzes failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete selected quiz questions.');
+        }
+    }
+
+    /**
      * Manage users.
      */
     public function users(Request $request)
@@ -236,6 +263,45 @@ class AdminDashboardController extends Controller
     }
 
     /**
+     * Delete multiple users.
+     */
+    public function bulkDestroyUsers(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No users selected for deletion.');
+        }
+
+        // Exclude the current logged in user
+        $ids = array_filter($ids, function($id) {
+            return $id != Auth::id();
+        });
+
+        if (empty($ids)) {
+            return back()->with('error', 'No valid users selected for deletion.');
+        }
+
+        try {
+            $users = User::whereIn('id', $ids)->get();
+            $deletedCount = 0;
+            foreach ($users as $user) {
+                if ($user->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->avatar)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+                }
+                $user->delete();
+                $deletedCount++;
+            }
+
+            return redirect()
+                ->route('admin.users')
+                ->with('success', "{$deletedCount} users deleted successfully.");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('AdminDashboardController@bulkDestroyUsers failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete selected users.');
+        }
+    }
+
+    /**
      * Leaderboard management view.
      */
     public function leaderboard()
@@ -323,9 +389,6 @@ class AdminDashboardController extends Controller
         }
 
         $community = Community::create($data);
-        
-        $community->members()->attach(Auth::id(), ['role' => 'admin']);
-        $community->increment('member_count');
 
         return redirect()->route('admin.communities')->with('success', 'Community created successfully!');
     }

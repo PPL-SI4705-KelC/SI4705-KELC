@@ -166,7 +166,7 @@
                         </div>
 
                         <div>
-                            <form method="POST" action="{{ route('admin.communities.destroy', $community) }}" onsubmit="return confirm('Deleting a community will delete all its postings and comments. Are you absolutely sure?')">
+                            <form method="POST" action="{{ route('admin.communities.destroy', $community) }}" data-confirm="Deleting a community will delete all its postings and comments. Are you absolutely sure?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-gray-400 hover:text-red-500 transition p-2 rounded-lg hover:bg-red-50">

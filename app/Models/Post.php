@@ -56,5 +56,13 @@ class Post extends Model
         return $this->likes()->where('user_id', $user->id)->exists();
     }
 
-
+    public function isVideo(): bool
+    {
+        if (!$this->image) {
+            return false;
+        }
+        
+        $extension = strtolower(pathinfo($this->image, PATHINFO_EXTENSION));
+        return in_array($extension, ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v']);
+    }
 }

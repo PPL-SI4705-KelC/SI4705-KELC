@@ -100,8 +100,8 @@ class CommunityController extends Controller
     {
         $request->validate([
             'content' => ['required', 'string', 'min:1', 'max:2000'],
-            'image'   => ['nullable', 'image', 'max:10240'],           // Photo only (up to 10 MB)
-            'video'   => ['nullable', 'mimetypes:video/*', 'max:51200'], // Video only (up to 50 MB)
+            'image'   => ['nullable', 'image', 'max:10240'],                      // Photo only (up to 10 MB)
+            'video'   => ['nullable', 'mimes:mp4,webm,ogg,mov,avi,mkv,3gp', 'max:51200'], // Video only (up to 50 MB)
         ]);
 
         $data = [
@@ -119,6 +119,25 @@ class CommunityController extends Controller
         Post::create($data);
 
         return back()->with('success', 'Post created!');
+    }
+
+    /**
+     * Delete a post.
+     */
+    public function destroyPost(Post $post)
+    {
+        if ($post->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+            abort(403);
+        }
+
+        // Delete associated file if it exists
+        if ($post->image) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($post->image);
+        }
+
+        $post->delete();
+
+        return back()->with('success', 'Post deleted.');
     }
 
     /**

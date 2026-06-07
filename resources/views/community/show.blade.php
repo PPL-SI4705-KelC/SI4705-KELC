@@ -32,21 +32,39 @@
                 <!-- Post Content (Left Side) -->
                 <div class="flex-1 flex flex-col min-w-0">
                     <!-- Author Header -->
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100">
-                            <img src="{{ $post->user->avatar ? asset('storage/' . $post->user->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($post->user->name).'&background=E2E8F0&color=2A5C4D' }}" alt="{{ $post->user->username }}" class="w-full h-full object-cover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100">
+                                <img src="{{ $post->user->avatar ? asset('storage/' . $post->user->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($post->user->name).'&background=E2E8F0&color=2A5C4D' }}" alt="{{ $post->user->username }}" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <p class="font-bold text-[#1E293B] text-[15px] leading-tight">{{ '@'.$post->user->username }}</p>
+                                <p class="text-[11px] font-medium text-gray-400">{{ $post->created_at->diffForHumans() }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="font-bold text-[#1E293B] text-[15px] leading-tight">{{ '@'.$post->user->username }}</p>
-                            <p class="text-[11px] font-medium text-gray-400">{{ $post->created_at->diffForHumans() }}</p>
-                        </div>
+                        
+                        @if($post->user_id === Auth::id() || Auth::user()->isAdmin())
+                        <form method="POST" action="{{ route('posts.destroy', $post) }}" data-confirm="Are you sure you want to delete this post?">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-8 h-8 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center transition" title="Delete post">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </form>
+                        @endif
                     </div>
                     
                     <!-- Post Body -->
                     <div class="mb-4">
                         @if($post->image)
-                        <div class="mb-4 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex justify-center">
-                            <img src="{{ asset('storage/' . $post->image) }}" alt="Post image" class="max-w-full h-auto max-h-[500px] object-contain">
+                        <div class="mb-4 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex justify-center w-full">
+                            @if($post->isVideo())
+                                <video src="{{ asset('storage/' . $post->image) }}" class="max-w-full h-auto max-h-[500px] rounded-2xl" controls></video>
+                            @else
+                                <img src="{{ asset('storage/' . $post->image) }}" alt="Post image" class="max-w-full h-auto max-h-[500px] object-contain">
+                            @endif
                         </div>
                         @endif
                         <p class="text-[15px] text-[#334155] leading-relaxed break-words whitespace-pre-line">{{ $post->content }}</p>
@@ -156,7 +174,7 @@
                                         <input type="text" name="content"
                                             id="reply-text-{{ $comment->id }}"
                                             required
-                                            placeholder="Reply to @{{ $comment->user->username }}..."
+                                            placeholder="Reply to {{ '@' . $comment->user->username }}..."
                                             class="flex-1 bg-transparent border-0 text-[11px] focus:ring-0 py-0.5 placeholder-gray-400 min-w-0">
                                         <div class="flex items-center gap-1 shrink-0">
                                             <button type="button"
@@ -311,7 +329,7 @@
                         </div>
 
                         <!-- Hidden file inputs -->
-                        <input type="file" name="image" id="post-photo-input" class="hidden" accept="image/*" onchange="handleMediaSelect(this, 'photo')">
+                        <input type="file" name="image" id="post-photo-input" class="hidden" accept="image/png, image/jpeg, image/jpg" onchange="handleMediaSelect(this, 'photo')">
                         <input type="file" name="video" id="post-video-input" class="hidden" accept="video/*" onchange="handleMediaSelect(this, 'video')">
 
                         <div class="flex items-center justify-between ml-12 border-t border-gray-100 pt-3">
@@ -321,22 +339,44 @@
                                 <div class="relative" id="upload-menu-wrapper">
                                     <button type="button" id="upload-plus-btn"
                                         onclick="toggleUploadMenu()"
-                                        class="w-9 h-9 rounded-full hover:bg-[#2D5A4C]/10 flex items-center justify-center transition-all duration-200 text-[#2D5A4C] font-bold text-xl leading-none select-none"
+                                        class="w-9 h-9 rounded-full bg-gray-50 hover:bg-[#2D5A4C]/10 flex items-center justify-center transition-all duration-300 text-[#2D5A4C] font-semibold text-xl leading-none select-none active:scale-95 shadow-sm"
                                         title="Upload media">
-                                        +
+                                                <svg id="upload-plus-icon" class="w-5 h-5 transition-transform duration-300 ease-out" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                                        </svg>
                                     </button>
 
                                     <!-- Dropdown menu -->
                                     <div id="upload-dropdown"
-                                        class="upload-dropdown-hidden absolute bottom-full left-0 mb-2 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-50 min-w-[160px]">
+                                        class="upload-dropdown-hidden absolute bottom-full left-0 mb-3 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_12px_40px_rgba(15,23,42,0.12)] border border-gray-150/70 p-2 z-50 w-60">
+                                        
+                                        <!-- Upload Foto Option -->
                                         <button type="button" onclick="document.getElementById('post-photo-input').click(); toggleUploadMenu();"
-                                            class="flex items-center gap-3 w-full px-4 py-3 text-[13px] font-semibold text-gray-700 hover:bg-[#2D5A4C]/8 hover:text-[#2D5A4C] transition-colors duration-150">
-                                            <span class="text-base">📷</span> Upload Foto
+                                            class="flex items-center gap-3.5 w-full text-left p-3 rounded-xl hover:bg-[#2D5A4C]/8 group transition-all duration-200">
+                                            <div class="w-9 h-9 rounded-lg bg-emerald-50 text-[#2D5A4C] group-hover:bg-[#2D5A4C] group-hover:text-white flex items-center justify-center shrink-0 transition-all duration-200 shadow-sm">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.9 2.9m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 002.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-[13px] font-bold text-gray-800 group-hover:text-[#2D5A4C] transition-colors leading-tight">Upload Foto</p>
+                                                <p class="text-[10px] text-gray-400 font-semibold mt-0.5 leading-none">Format: PNG, JPG, JPEG</p>
+                                            </div>
                                         </button>
-                                        <div class="h-px bg-gray-100 mx-3"></div>
+                                        
+                                        <!-- Upload Video Option -->
                                         <button type="button" onclick="document.getElementById('post-video-input').click(); toggleUploadMenu();"
-                                            class="flex items-center gap-3 w-full px-4 py-3 text-[13px] font-semibold text-gray-700 hover:bg-[#2D5A4C]/8 hover:text-[#2D5A4C] transition-colors duration-150">
-                                            <span class="text-base">🎥</span> Upload Video
+                                            class="flex items-center gap-3.5 w-full text-left p-3 rounded-xl hover:bg-[#2D5A4C]/8 group transition-all duration-200">
+                                            <div class="w-9 h-9 rounded-lg bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white flex items-center justify-center shrink-0 transition-all duration-200 shadow-sm">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72V10.5z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-[13px] font-bold text-gray-800 group-hover:text-[#2D5A4C] transition-colors leading-tight">Upload Video</p>
+                                                <p class="text-[10px] text-gray-400 font-semibold mt-0.5 leading-none">Format: MP4, WebM, OGG</p>
+                                            </div>
                                         </button>
                                     </div>
                                 </div>
@@ -442,17 +482,25 @@
         let uploadMenuOpen = false;
         function toggleUploadMenu() {
             const dropdown = document.getElementById('upload-dropdown');
+            const plusIcon = document.getElementById('upload-plus-icon');
             uploadMenuOpen = !uploadMenuOpen;
             dropdown.classList.toggle('upload-dropdown-visible', uploadMenuOpen);
             dropdown.classList.toggle('upload-dropdown-hidden', !uploadMenuOpen);
+            if (plusIcon) {
+                plusIcon.classList.toggle('rotate-45', uploadMenuOpen);
+            }
         }
         document.addEventListener('click', function(e) {
             const wrapper = document.getElementById('upload-menu-wrapper');
             if (wrapper && !wrapper.contains(e.target) && uploadMenuOpen) {
                 uploadMenuOpen = false;
                 const dropdown = document.getElementById('upload-dropdown');
+                const plusIcon = document.getElementById('upload-plus-icon');
                 dropdown.classList.remove('upload-dropdown-visible');
                 dropdown.classList.add('upload-dropdown-hidden');
+                if (plusIcon) {
+                    plusIcon.classList.remove('rotate-45');
+                }
             }
         });
 
@@ -460,6 +508,46 @@
         function handleMediaSelect(input, type) {
             const file = input.files[0];
             if (!file) return;
+
+            // Client-side file size check to prevent PostTooLargeException
+            // Limit to 8MB (8 * 1024 * 1024 bytes) to match PHP config limits
+            const maxSizeBytes = 8 * 1024 * 1024;
+            if (file.size > maxSizeBytes) {
+                showCustomAlert('Ukuran berkas terlalu besar. Maksimal ukuran berkas yang diperbolehkan adalah 8 MB.', 'Peringatan');
+                input.value = ''; // Clear selection
+                return;
+            }
+
+            // Strong validation for photos (PNG, JPG, JPEG)
+            if (type === 'photo') {
+                const allowedMimes = ['image/png', 'image/jpeg', 'image/jpg'];
+                const allowedExtensions = ['.png', '.jpg', '.jpeg'];
+                const fileName = file.name.toLowerCase();
+                const isValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+                const isValidMime = allowedMimes.includes(file.type);
+
+                if (!isValidMime && !isValidExtension) {
+                    showCustomAlert('Format berkas harus berupa PNG, JPG, atau JPEG.', 'Format Berkas Salah');
+                    input.value = ''; // Clear selection
+                    return;
+                }
+            }
+
+            // Strong validation for videos (MP4, WebM, OGG, MOV, AVI, MKV)
+            if (type === 'video') {
+                const allowedMimes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-matroska', 'video/avi'];
+                const allowedExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.m4v', '.avi', '.mkv', '.3gp'];
+                const fileName = file.name.toLowerCase();
+                const isValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+                const isValidMime = allowedMimes.includes(file.type) || file.type.startsWith('video/');
+
+                if (!isValidMime && !isValidExtension) {
+                    showCustomAlert('Format berkas harus berupa video (MP4, WebM, OGG, MOV, AVI, atau MKV).', 'Format Berkas Salah');
+                    input.value = ''; // Clear selection
+                    return;
+                }
+            }
+
             const previewArea = document.getElementById('post-media-preview');
             const previewImg  = document.getElementById('preview-img');
             const previewVid  = document.getElementById('preview-video');
@@ -746,6 +834,19 @@
             input.setSelectionRange(newPos, newPos);
             input.focus();
         }
+
+        // Show session error or validation error if present
+        @if($errors->any())
+            window.addEventListener('DOMContentLoaded', () => {
+                showCustomAlert('{{ $errors->first() }}', 'Peringatan');
+            });
+        @endif
+
+        @if(session('success'))
+            window.addEventListener('DOMContentLoaded', () => {
+                showCustomAlert('{{ session('success') }}', 'Berhasil');
+            });
+        @endif
     </script>
     @endpush
 </x-app-layout>

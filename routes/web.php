@@ -56,6 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/community/{community}/leave', [CommunityController::class, 'leave'])->name('community.leave');
     Route::post('/community/{community}/posts', [CommunityController::class, 'storePost'])->name('community.posts.store');
     Route::post('/posts/{post}/like', [CommunityController::class, 'toggleLike'])->name('posts.like');
+    Route::delete('/posts/{post}', [CommunityController::class, 'destroyPost'])->name('posts.destroy');
 
     Route::post('/posts/{post}/comments', [CommunityController::class, 'storeComment'])->name('posts.comments.store');
     Route::delete('/comments/{comment}', [CommunityController::class, 'destroyComment'])->name('comments.destroy');
@@ -97,6 +98,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs.index');
     Route::get('/blogs/create', [AdminBlogController::class, 'create'])->name('blogs.create');
     Route::post('/blogs', [AdminBlogController::class, 'store'])->name('blogs.store');
+    Route::delete('/blogs/bulk-destroy', [AdminBlogController::class, 'bulkDestroy'])->name('blogs.bulk-destroy');
     Route::get('/blogs/{blog}/edit', [AdminBlogController::class, 'edit'])->name('blogs.edit');
     Route::put('/blogs/{blog}', [AdminBlogController::class, 'update'])->name('blogs.update');
     Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->name('blogs.destroy');
@@ -106,6 +108,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Admin Quizzes
     Route::get('/quizzes', [AdminDashboardController::class, 'quizzes'])->name('quizzes');
     Route::post('/quizzes', [AdminDashboardController::class, 'storeQuiz'])->name('quizzes.store');
+    Route::delete('/quizzes/bulk-destroy', [AdminDashboardController::class, 'bulkDestroyQuizzes'])->name('quizzes.bulk-destroy');
     Route::get('/quizzes/{quiz}/edit', [AdminDashboardController::class, 'editQuiz'])->name('quizzes.edit');
     Route::put('/quizzes/{quiz}', [AdminDashboardController::class, 'updateQuiz'])->name('quizzes.update');
     Route::delete('/quizzes/{quiz}', [AdminDashboardController::class, 'destroyQuiz'])->name('quizzes.destroy');
@@ -123,6 +126,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
     Route::get('/users/create', [AdminDashboardController::class, 'createUser'])->name('users.create');
     Route::post('/users', [AdminDashboardController::class, 'storeUser'])->name('users.store');
+    Route::delete('/users/bulk-destroy', [AdminDashboardController::class, 'bulkDestroyUsers'])->name('users.bulk-destroy');
     Route::get('/users/{user}/edit', [AdminDashboardController::class, 'editUser'])->name('users.edit');
     Route::put('/users/{user}', [AdminDashboardController::class, 'updateUser'])->name('users.update');
     Route::delete('/users/{user}', [AdminDashboardController::class, 'destroyUser'])->name('users.destroy');

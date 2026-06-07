@@ -235,6 +235,39 @@ class AdminBlogController extends Controller
     }
 
     /**
+     * Delete multiple blogs and their featured images.
+     */
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No articles selected for deletion.');
+        }
+
+        try {
+            $blogs = Blog::whereIn('id', $ids)->get();
+            $deletedCount = 0;
+
+            foreach ($blogs as $blog) {
+                // Delete featured image from storage
+                if ($blog->featured_image && Storage::disk('public')->exists($blog->featured_image)) {
+                    Storage::disk('public')->delete($blog->featured_image);
+                }
+                $blog->delete();
+                $deletedCount++;
+            }
+
+            return redirect()
+                ->route('admin.blogs.index')
+                ->with('success', "{$deletedCount} articles deleted successfully.");
+
+        } catch (\Throwable $e) {
+            Log::error('AdminBlogController@bulkDestroy failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete selected articles.');
+        }
+    }
+
+    /**
      * Approve a pending blog submission.
      *
      * CRITICAL: Uses DB::transaction to ensure atomicity.

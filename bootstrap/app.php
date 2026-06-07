@@ -19,5 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, $request) {
+            return back()->withErrors(['error' => 'Ukuran berkas yang diunggah terlalu besar (Maksimal total request adalah 8 MB).'])->withInput();
+        });
     })->create();

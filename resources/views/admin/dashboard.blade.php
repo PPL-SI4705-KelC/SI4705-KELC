@@ -369,9 +369,13 @@
                 @foreach($recentUsers as $idx => $u)
                 <div class="user-row flex items-center justify-between p-3">
                     <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 select-none shadow-sm
-                            {{ $idx % 3 === 0 ? 'bg-gradient-to-br from-primary-100 to-primary-200 text-primary-700' : ($idx % 3 === 1 ? 'bg-gradient-to-br from-secondary-100 to-secondary-200 text-secondary-700' : 'bg-gradient-to-br from-accent-100 to-accent-200 text-accent-700') }}">
-                            {{ strtoupper(substr($u->name, 0, 2)) }}
+                        <div class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shrink-0 select-none shadow-sm
+                            {{ !$u->avatar ? ($idx % 3 === 0 ? 'bg-gradient-to-br from-primary-100 to-primary-200 text-primary-700' : ($idx % 3 === 1 ? 'bg-gradient-to-br from-secondary-100 to-secondary-200 text-secondary-700' : 'bg-gradient-to-br from-accent-100 to-accent-200 text-accent-700')) : '' }}">
+                            @if($u->avatar)
+                                <img src="{{ asset('storage/' . $u->avatar) }}" alt="{{ $u->name }}'s Avatar" class="w-full h-full object-cover">
+                            @else
+                                <span class="text-xs font-bold">{{ strtoupper(substr($u->name, 0, 2)) }}</span>
+                            @endif
                         </div>
                         <div class="overflow-hidden min-w-0">
                             <p class="text-sm font-bold text-content truncate leading-tight">{{ $u->name }}</p>
