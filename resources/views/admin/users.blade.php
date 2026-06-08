@@ -117,8 +117,7 @@
                                 @endif
                             </td>
                             <td class="py-3 px-4">
-                                <div class="font-medium text-content">{{ $u->name }}</div>
-                                <div class="text-xs text-content-muted">{{ '@' . $u->username }}</div>
+                                <div class="font-medium text-content">{{ $u->username }}</div>
                             </td>
                             <td class="py-3 px-4 text-content-muted">{{ $u->email }}</td>
                             <td class="py-3 px-4 text-center"><span class="badge {{ $u->role === 'admin' ? 'badge-primary' : 'badge-secondary' }}">{{ $u->role }}</span></td>
@@ -133,7 +132,7 @@
                                         </svg>
                                     </a>
                                     @if($u->id !== Auth::id())
-                                    <form method="POST" action="{{ route('admin.users.destroy', $u) }}" data-confirm="Are you sure you want to delete user {{ $u->name }}? This action cannot be undone.">
+                                    <form method="POST" action="{{ route('admin.users.destroy', $u) }}" data-confirm="Are you sure you want to delete user {{ $u->username }}? This action cannot be undone.">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-red-50/50 rounded-lg" title="Delete">

@@ -17,13 +17,20 @@ class CommunityController extends Controller
     /**
      * List communities.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $communities = Community::active()
-            ->withCount('members')
-            ->latest()
-            ->paginate(12);
+        $query = Community::active()
+            ->withCount('members');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $communities = $query->latest()
+            ->paginate(12)
+            ->withQueryString();
 
         $myCommunities = $user->communities()->pluck('communities.id')->toArray();
 
@@ -36,13 +43,14 @@ class CommunityController extends Controller
     public function show(Community $community)
     {
         $user = Auth::user();
-        $isMember = $community->members()->where('user_id', $user->id)->exists();
+        $isMember = request()->has('preview') ? false : $community->members()->where('user_id', $user->id)->exists();
 
         $posts = $community->posts()
             ->with(['user:id,name,username,level,avatar', 'comments'])
             ->withCount(['likes', 'comments'])
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         // Mark liked for current user
         $likedPostIds = $user->likedPosts()->pluck('posts.id')->toArray();
@@ -66,6 +74,10 @@ class CommunityController extends Controller
     public function join(Community $community)
     {
         $user = Auth::user();
+
+        if ($user->isAdmin() || request()->has('preview')) {
+            return back()->with('error', 'Admins/previews cannot join communities.');
+        }
 
         if (!$community->members()->where('user_id', $user->id)->exists()) {
             $community->members()->attach($user->id, ['role' => 'member']);

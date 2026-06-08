@@ -1,19 +1,34 @@
 <x-app-layout>
     <x-slot name="title">Communities</x-slot>
     <x-slot name="header">
-        <div class="mb-5">
-            <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2D5A4C] text-[#2D5A4C] hover:bg-[#2D5A4C] hover:text-white transition-all duration-200 text-sm font-bold w-fit">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Back to Dashboard
-            </a>
-        </div>
         <div>
             <h1 class="text-2xl md:text-3xl font-black text-content">Climate Communities</h1>
-            <p class="text-base text-content-muted mt-1 text-right">Connect with eco-minded people</p>
+            <p class="text-base text-content-muted mt-1">Connect with eco-minded people</p>
         </div>
     </x-slot>
 
     <div class="space-y-6 animate-fade-in pb-10">
+        {{-- Search bar --}}
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center justify-between gap-4">
+            <form method="GET" action="{{ route('community.index') }}" class="flex items-center gap-2 w-full max-w-md">
+                <div class="relative w-full">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </span>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search communities by name..." 
+                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/15 focus:border-[#2A5C4D] text-xs font-semibold transition">
+                </div>
+                <button type="submit" class="bg-[#2A5C4D] hover:bg-[#1e4237] text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow-sm shrink-0">
+                    Search
+                </button>
+                @if(request()->filled('search'))
+                    <a href="{{ route('community.index') }}" class="text-xs text-gray-500 hover:text-red-500 font-bold px-3 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition shrink-0">
+                        Reset
+                    </a>
+                @endif
+            </form>
+        </div>
+
         @forelse($communities as $community)
         <div class="bg-white rounded-[24px] border border-gray-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col md:flex-row w-full">
             {{-- Cover Image Column --}}
@@ -115,19 +130,6 @@
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                                     Edit Details
                                 </a>
-
-                                <form method="POST" action="{{ route('admin.communities.toggle-status', $community) }}">
-                                    @csrf
-                                    <button type="submit" class="inline-flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm">
-                                        @if($community->is_active)
-                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                                            Deactivate
-                                        @else
-                                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            Reactivate
-                                        @endif
-                                    </button>
-                                </form>
                             </div>
                         @endif
                     </div>
@@ -137,7 +139,12 @@
         @empty
         <div class="text-center py-16 bg-white border border-gray-100 rounded-3xl w-full">
             <span class="text-5xl">🌱</span>
-            <p class="text-content-muted mt-4">No communities yet. Stay tuned!</p>
+            @if(request()->filled('search'))
+                <p class="text-content-muted mt-4">No communities found matching "{{ request('search') }}".</p>
+                <a href="{{ route('community.index') }}" class="text-xs text-[#2A5C4D] font-bold hover:underline mt-2 inline-block">Reset search</a>
+            @else
+                <p class="text-content-muted mt-4">No communities yet. Stay tuned!</p>
+            @endif
         </div>
         @endforelse
     </div>

@@ -61,18 +61,7 @@
                     <span class="text-[80px] font-black text-[#2A5C4D] leading-none tracking-tight">{{ number_format($totalEmissions, 2) }}</span>
                     <span class="text-2xl font-bold text-gray-900">Kg</span>
                 </div>
-                <div class="flex items-center gap-1.5 mt-4 z-10">
-                    <span class="{{ $trendDirection === 'down' ? 'text-emerald-600' : ($trendDirection === 'up' ? 'text-red-500' : 'text-gray-500') }} font-bold text-[15px]">
-                        @if($trendDirection === 'down')
-                            ↓ {{ $trendPercentage }}%
-                        @elseif($trendDirection === 'up')
-                            ↑ {{ $trendPercentage }}%
-                        @else
-                            {{ $trendPercentage }}%
-                        @endif
-                    </span>
-                    <span class="text-gray-400 text-[15px] font-medium">vs previous 7 days</span>
-                </div>
+
                 
                 <div class="mt-8 z-10 flex items-center gap-4 border-t border-gray-100 pt-6">
                     @php
