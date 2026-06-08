@@ -15,7 +15,9 @@
                 <p class="text-sm text-content-muted">{{ $community->members_count ?? $community->member_count }} members</p>
             </div>
         </div>
-        @if(!$isMember)
+        @if(request()->has('preview'))
+        <button type="button" class="btn-primary text-sm opacity-80 cursor-not-allowed pointer-events-none">Join Community</button>
+        @elseif(!$isMember)
         <form method="POST" action="{{ route('community.join', $community) }}">@csrf <button class="btn-primary text-sm">Join Community</button></form>
         @else
         <form method="POST" action="{{ route('community.leave', $community) }}">@csrf <button class="btn-ghost text-red-500 text-sm border border-red-200 rounded-full px-4 py-1.5 hover:bg-red-50">Leave Community</button></form>
@@ -43,7 +45,7 @@
                             </div>
                         </div>
                         
-                        @if($post->user_id === Auth::id() || Auth::user()->isAdmin())
+                        @if(!request()->has('preview') && ($post->user_id === Auth::id() || Auth::user()->isAdmin()))
                         <form method="POST" action="{{ route('posts.destroy', $post) }}" data-confirm="Are you sure you want to delete this post?">
                             @csrf
                             @method('DELETE')
@@ -73,6 +75,14 @@
                     <!-- Action Buttons -->
                     <div class="mt-auto pt-4 flex items-center gap-4 text-gray-500">
                         <!-- Like -->
+                        @if(request()->has('preview'))
+                            <button type="button" class="flex items-center gap-1.5 text-gray-400 cursor-default pointer-events-none">
+                                <svg class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                                </svg>
+                                <span class="text-sm font-bold">{{ $post->likes_count > 0 ? $post->likes_count : '' }}</span>
+                            </button>
+                        @else
                         <form method="POST" action="{{ route('posts.like', $post) }}">
                             @csrf
                             <button type="submit" class="flex items-center gap-1.5 hover:text-[#2D5A4C] transition {{ in_array($post->id, $likedPostIds) ? 'text-[#2D5A4C]' : '' }}">
@@ -82,6 +92,7 @@
                                 <span class="text-sm font-bold">{{ $post->likes_count > 0 ? $post->likes_count : '' }}</span>
                             </button>
                         </form>
+                        @endif
                         
 
                         <!-- Share -->
@@ -112,7 +123,7 @@
                                     <div class="bg-gray-50 rounded-2xl px-3 py-2">
                                         <div class="flex items-center gap-1.5 justify-between mb-0.5">
                                             <p class="font-bold text-[#1E293B] text-[11px]">{{ '@'.$comment->user->username }}</p>
-                                            @if($comment->user_id === Auth::id() || Auth::user()->isAdmin())
+                                            @if(!request()->has('preview') && ($comment->user_id === Auth::id() || Auth::user()->isAdmin()))
                                             <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="inline">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="text-gray-300 hover:text-red-400 transition">
@@ -147,7 +158,7 @@
                                         <div class="bg-[#f0faf6] border border-[#2D5A4C]/10 rounded-2xl px-3 py-2">
                                             <div class="flex items-center gap-1.5 justify-between mb-0.5">
                                                 <p class="font-bold text-[#2D5A4C] text-[10px]">{{ '@'.$reply->user->username }}</p>
-                                                @if($reply->user_id === Auth::id() || Auth::user()->isAdmin())
+                                                @if(!request()->has('preview') && ($reply->user_id === Auth::id() || Auth::user()->isAdmin()))
                                                 <form method="POST" action="{{ route('comments.destroy', $reply) }}" class="inline">
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="text-gray-300 hover:text-red-400 transition">
