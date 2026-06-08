@@ -41,8 +41,39 @@
                     <span class="text-2xl font-bold text-gray-900">Kg</span>
                 </div>
                 <div class="flex items-center gap-1.5 mt-4 z-10">
+<<<<<<< HEAD
                     <span class="text-[#2A5C4D] font-bold text-[15px]">~12%</span>
                     <span class="text-gray-400 text-[15px] font-medium">than last week</span>
+=======
+                    <span class="{{ $trendDirection === 'down' ? 'text-emerald-600' : ($trendDirection === 'up' ? 'text-red-500' : 'text-gray-500') }} font-bold text-[15px]">
+                        @if($trendDirection === 'down')
+                            ↓ {{ $trendPercentage }}%
+                        @elseif($trendDirection === 'up')
+                            ↑ {{ $trendPercentage }}%
+                        @else
+                            {{ $trendPercentage }}%
+                        @endif
+                    </span>
+                    <span class="text-gray-400 text-[15px] font-medium">vs previous 7 days</span>
+                </div>
+                
+                <div class="mt-8 z-10 flex items-center gap-4 border-t border-gray-100 pt-6">
+                    @php
+                        $sdgColor = 'bg-red-500'; // default merah
+                        if ($sdgScore >= 89) {
+                            $sdgColor = 'bg-emerald-500'; // hijau 100-89
+                        } elseif ($sdgScore >= 40) {
+                            $sdgColor = 'bg-yellow-500'; // kuning 40-89
+                        }
+                    @endphp
+                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl shadow-sm text-white font-black text-xl {{ $sdgColor }}">
+                        {{ $sdgScore }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-gray-900 uppercase tracking-wider">SDG Impact Score</p>
+                        <p class="text-xs text-gray-500">Your contribution to SDG 13 (Climate Action)</p>
+                    </div>
+>>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
                 </div>
                 
                 {{-- Background Cloud Icon --}}

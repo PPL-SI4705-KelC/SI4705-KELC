@@ -1,22 +1,15 @@
 <x-app-layout>
-    <x-slot name="title">Blog Management</x-slot>
+    <x-slot name="title">Manage Blogs</x-slot>
     <x-slot name="header">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
-            <div>
-                <h1 class="text-xl font-bold text-content">Blog Management</h1>
-                <p class="text-sm text-content-muted">Create and manage your climate action content</p>
-            </div>
-            <div>
-                <a href="{{ route('admin.blogs.create') }}" id="btn-add-new-blog" class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-                    </svg>
-                    Add New Blog
-                </a>
-            </div>
+        <h1 class="text-xl font-bold text-content">Blog Management</h1>
+        <div class="flex gap-2">
+            <a href="{{ route('admin.blogs', ['status' => 'pending']) }}" class="badge {{ $status === 'pending' ? 'badge-accent' : '' }} px-3 py-1.5 text-sm">Pending</a>
+            <a href="{{ route('admin.blogs', ['status' => 'approved']) }}" class="badge {{ $status === 'approved' ? 'badge-secondary' : '' }} px-3 py-1.5 text-sm">Approved</a>
+            <a href="{{ route('admin.blogs', ['status' => 'rejected']) }}" class="badge {{ $status === 'rejected' ? 'badge-danger' : '' }} px-3 py-1.5 text-sm">Rejected</a>
         </div>
     </x-slot>
 
+<<<<<<< HEAD
     <div class="space-y-6 animate-fade-in pb-12" x-data="{ openRejectModal: false, rejectId: null, rejectTitle: '' }">
 
         {{-- ══ Flash Messages ══════════════════════════════════════ --}}
@@ -33,17 +26,29 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                 </svg>
                 {{ session('success') }}
+=======
+    <div class="space-y-4 animate-fade-in">
+        @forelse($blogs as $blog)
+        <div class="card">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <h3 class="font-semibold text-content">{{ $blog->title }}</h3>
+                    <p class="text-sm text-content-muted mt-1">By {{ $blog->user->name }} · {{ $blog->created_at->format('d M Y') }}</p>
+                    <p class="text-sm text-content-body mt-2 line-clamp-2">{{ Str::limit(strip_tags($blog->content), 200) }}</p>
+                </div>
+>>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
             </div>
-        @endif
-
-        @if(session('error'))
-            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
-                 class="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-red-500 text-white text-sm font-bold rounded-full shadow-lg flex items-center gap-2" id="flash-error">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                {{ session('error') }}
+            @if($status === 'pending')
+            <div class="flex gap-2 mt-4 pt-4 border-t border-surface-border">
+                <form method="POST" action="{{ route('admin.blogs.approve', $blog) }}">@csrf
+                    <button class="btn-secondary text-sm">✓ Approve</button>
+                </form>
+                <form method="POST" action="{{ route('admin.blogs.reject', $blog) }}" class="flex-1 flex gap-2">@csrf
+                    <input type="text" name="reason" required placeholder="Rejection reason..." class="form-input flex-1 py-2 text-sm">
+                    <button class="btn-ghost text-sm text-red-500">✕ Reject</button>
+                </form>
             </div>
+<<<<<<< HEAD
         @endif
 
         {{-- ══ Search & Tabs ══════════════════════════════════════ --}}
@@ -333,8 +338,13 @@
                 </div>
             </form>
         </div>
+=======
+            @endif
+>>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
         </div>
+        @empty
+        <div class="text-center py-12"><p class="text-content-muted">No {{ $status }} blogs.</p></div>
+        @endforelse
+        {{ $blogs->links() }}
     </div>
-    </div>
-
 </x-app-layout>

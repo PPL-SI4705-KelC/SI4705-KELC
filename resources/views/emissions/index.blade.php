@@ -173,7 +173,22 @@
                         return;
                     }
 
+<<<<<<< HEAD
                     const labels = chartData.map(d => d.emission_date);
+=======
+<<<<<<< HEAD
+                    // Format dates to clean 'dd MMM' format (e.g. '29 Apr')
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const labels = chartData.map(d => {
+                        const date = new Date(d.emission_date);
+                        const day = date.getDate();
+                        const month = monthNames[date.getMonth()];
+                        return day + ' ' + month;
+                    });
+=======
+                    const labels = chartData.map(d => d.emission_date);
+>>>>>>> 23cf5aa1bc2c2abe1c6339f71e906666f4fde41d
+>>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
                     const totals = chartData.map(d => parseFloat(d.total_emission));
 
                     const ctx = document.getElementById('carbonTrendChart').getContext('2d');
@@ -219,6 +234,19 @@
                                     cornerRadius: 10,
                                     displayColors: this.chartType === 'pie',
                                     callbacks: {
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+                                        title: function(tooltipItems) {
+                                            // Show full date in tooltip title
+                                            const idx = tooltipItems[0].dataIndex;
+                                            const raw = chartData[idx].emission_date;
+                                            const date = new Date(raw);
+                                            return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                                        },
+=======
+>>>>>>> 23cf5aa1bc2c2abe1c6339f71e906666f4fde41d
+>>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
                                         label: function(ctx) {
                                             const val = ctx.parsed.y !== undefined ? ctx.parsed.y : ctx.parsed;
                                             return ' CO₂: ' + val.toFixed(2) + ' kg';
