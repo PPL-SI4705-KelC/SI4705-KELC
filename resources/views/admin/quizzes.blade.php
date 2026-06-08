@@ -1,10 +1,7 @@
 <x-app-layout>
     <x-slot name="title">Manage Quizzes</x-slot>
     <x-slot name="header">
-        <div>
-            <h1 class="text-xl font-bold text-content">Quiz Management</h1>
-            <p class="text-sm text-content-muted">Manage the daily climate questions pool</p>
-        </div>
+        <h1 class="text-xl font-bold text-content">Quiz Management</h1>
     </x-slot>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
@@ -15,23 +12,20 @@
                 @csrf
                 <div>
                     <label class="form-label">Question</label>
-                    <textarea name="question" rows="3" required class="form-input text-xs" placeholder="e.g. Which of the following has the highest carbon footprint?"></textarea>
-                    <x-input-error :messages="$errors->get('question')" class="mt-1" />
+                    <textarea name="question" rows="2" required class="form-input" placeholder="Enter the quiz question..."></textarea>
                 </div>
-                
-                <div class="space-y-2">
-                    <label class="form-label">Options</label>
+                <div class="grid grid-cols-2 gap-3">
                     @for($i = 0; $i < 4; $i++)
                     <div>
-                        <input type="text" name="options[]" required class="form-input text-xs py-2" placeholder="Option {{ $i + 1 }}">
+                        <label class="form-label">Option {{ $i + 1 }}</label>
+                        <input type="text" name="options[]" required class="form-input" placeholder="Answer option {{ $i + 1 }}">
                     </div>
                     @endfor
                 </div>
-
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-3 gap-3">
                     <div>
                         <label class="form-label">Correct Answer</label>
-                        <select name="correct_answer" class="form-input text-xs py-2">
+                        <select name="correct_answer" class="form-input">
                             <option value="0">Option 1</option>
                             <option value="1">Option 2</option>
                             <option value="2">Option 3</option>
@@ -40,25 +34,18 @@
                     </div>
                     <div>
                         <label class="form-label">Category</label>
-                        <select name="category" class="form-input text-xs py-2">
-                            <option value="transport">transport</option>
-                            <option value="energy">energy</option>
-                            <option value="consumption">consumption</option>
-                            <option value="climate">climate</option>
+                        <input type="text" name="category" value="climate" class="form-input">
+                    </div>
+                    <div>
+                        <label class="form-label">Difficulty</label>
+                        <select name="difficulty" class="form-input">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
                         </select>
                     </div>
                 </div>
-
-                <div>
-                    <label class="form-label">Difficulty</label>
-                    <select name="difficulty" class="form-input text-xs py-2">
-                        <option value="easy">Easy</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="hard">Hard</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn-primary w-full py-2.5 mt-2">Add Question</button>
+                <button type="submit" class="btn-primary">Add Question</button>
             </form>
         </div>
 
@@ -111,15 +98,13 @@
                             </form>
                         </div>
                     </div>
-                    @empty
-                    <div class="text-center py-12"><p class="text-content-muted">No quiz questions found.</p></div>
-                    @endforelse
+                    <form method="POST" action="{{ route('admin.quizzes.destroy', $quiz) }}" onsubmit="return confirm('Delete?')">@csrf @method('DELETE')
+                        <button class="text-red-400 hover:text-red-600 text-sm">Delete</button>
+                    </form>
                 </div>
-
-                <div class="mt-6">
-                    {{ $quizzes->links() }}
-                </div>
+                @endforeach
             </div>
+            {{ $quizzes->links() }}
         </div>
     </div>
 </x-app-layout>

@@ -9,6 +9,7 @@ use App\Models\Emission;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use App\Models\User;
+use App\Services\GamificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +33,7 @@ class AdminDashboardController extends Controller
         ];
 
         // Recent users
-        $recentUsers = User::latest()->limit(4)->get();
+        $recentUsers = User::latest()->limit(5)->get();
 
         // Weekly emission trend
         $weeklyEmissions = Emission::selectRaw('DATE(emission_date) as date, AVG(total_emission) as avg_emission')
@@ -45,21 +46,65 @@ class AdminDashboardController extends Controller
     }
 
     /**
+     * Manage blogs (approve/reject).
+     */
+    public function blogs(Request $request)
+    {
+        $status = $request->get('status', 'pending');
+        $blogs = Blog::where('status', $status)
+            ->with('user:id,name,username')
+            ->latest()
+            ->paginate(15);
+
+        return view('admin.blogs', compact('blogs', 'status'));
+    }
+
+    /**
+     * Approve a blog.
+     */
+    public function approveBlog(Blog $blog)
+    {
+        $blog->update([
+            'status' => 'approved',
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+            'published_at' => now(),
+        ]);
+
+        // Award XP to author
+        $author = $blog->user;
+        $isFirst = $author->blogs()->approved()->count() <= 1;
+        $xpAmount = $isFirst ? 1000 : 500;
+
+        $gamification = new GamificationService();
+        $gamification->awardXp($author, $xpAmount, 'blog', $isFirst ? 'First blog published' : 'Blog published');
+
+        return back()->with('success', 'Blog approved! Author awarded ' . $xpAmount . ' XP.');
+    }
+
+    /**
+     * Reject a blog.
+     */
+    public function rejectBlog(Request $request, Blog $blog)
+    {
+        $request->validate(['reason' => 'required|string|max:500']);
+
+        $blog->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->reason,
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Blog rejected.');
+    }
+
+    /**
      * Manage quizzes.
      */
-    public function quizzes(Request $request)
+    public function quizzes()
     {
-        $query = Quiz::query();
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('question', 'like', "%{$search}%")
-                  ->orWhere('category', 'like', "%{$search}%");
-            });
-        }
-
-        $quizzes = $query->latest()->paginate(20)->withQueryString();
+        $quizzes = Quiz::latest()->paginate(20);
         return view('admin.quizzes', compact('quizzes'));
     }
 
@@ -80,34 +125,6 @@ class AdminDashboardController extends Controller
         Quiz::create($request->only('question', 'options', 'correct_answer', 'category', 'difficulty'));
 
         return back()->with('success', 'Quiz question added!');
-    }
-
-    /**
-     * Edit quiz question form.
-     */
-    public function editQuiz(Quiz $quiz)
-    {
-        return view('admin.quizzes.edit', compact('quiz'));
-    }
-
-    /**
-     * Update quiz question.
-     */
-    public function updateQuiz(Request $request, Quiz $quiz)
-    {
-        $request->validate([
-            'question' => 'required|string|min:10',
-            'options' => 'required|array|size:4',
-            'options.*' => 'required|string',
-            'correct_answer' => 'required|integer|min:0|max:3',
-            'category' => 'required|string',
-            'difficulty' => 'required|in:easy,medium,hard',
-            'is_active' => 'required|boolean',
-        ]);
-
-        $quiz->update($request->only('question', 'options', 'correct_answer', 'category', 'difficulty', 'is_active'));
-
-        return redirect()->route('admin.quizzes')->with('success', 'Quiz question updated!');
     }
 
     /**
@@ -135,7 +152,7 @@ class AdminDashboardController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(20)->withQueryString();
+        $users = $query->latest()->paginate(20);
         return view('admin.users', compact('users'));
     }
 
