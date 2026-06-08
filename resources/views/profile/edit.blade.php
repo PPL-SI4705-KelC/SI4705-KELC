@@ -1,6 +1,23 @@
-<x-calculator-layout x-data="{ showConfirmModal: false }">
-    <x-slot name="title">Profile Settings - Act4Climate</x-slot>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Profile') }}
+        </h2>
+    </x-slot>
 
+<<<<<<< HEAD
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div class="max-w-xl">
+                    @include('profile.partials.update-profile-information-form')
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div class="max-w-xl">
+                    @include('profile.partials.update-password-form')
+=======
     <!-- Custom Top Header -->
     <div class="w-full bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-4 sticky top-0 z-50 shadow-sm">
         <a href="{{ route('dashboard') }}" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition">
@@ -164,11 +181,20 @@
                             </div>
                         @endif
                     </form>
+>>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
                 </div>
             </div>
 
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div class="max-w-xl">
+                    @include('profile.partials.delete-user-form')
+                </div>
+            </div>
         </div>
     </div>
+<<<<<<< HEAD
+</x-app-layout>
+=======
 
     <!-- Confirmation Modal -->
     <div x-show="showConfirmModal" 
@@ -222,3 +248,4 @@
         </div>
     </div>
 </x-calculator-layout>
+>>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f

@@ -1,6 +1,20 @@
 <x-app-layout>
-    <x-slot name="title">Communities</x-slot>
     <x-slot name="header">
+<<<<<<< HEAD
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Community') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-2">
+        <div class="w-full mx-auto sm:px-2 lg:px-4">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    {{ __("Welcome to the Community section!") }}
+                </div>
+            </div>
+        </div>
+=======
         <div>
             <h1 class="text-xl font-bold text-content">Climate Communities 🌍</h1>
             <p class="text-sm text-content-muted">Connect with eco-minded people</p>
@@ -39,6 +53,6 @@
             <p class="text-content-muted mt-4">No communities yet. Stay tuned!</p>
         </div>
         @endforelse
+>>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
     </div>
-    <div class="mt-6">{{ $communities->links() }}</div>
 </x-app-layout>

@@ -1,4 +1,9 @@
 <<<<<<< HEAD
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+=======
+<<<<<<< HEAD
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -166,3 +171,4 @@
     to { opacity: 1; transform: scale(1); }
 >>>>>>> 14f647be00457c2be938ca3977220a2674dc60a5
 }
+>>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f

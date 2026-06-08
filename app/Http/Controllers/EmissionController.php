@@ -31,7 +31,7 @@ class EmissionController extends Controller
 
         if ($todayActivity) {
             return redirect()->route('calculator.show', $todayActivity->emission)
-                ->with('info', 'You have already calculated your climate impact today. You can calculate again tomorrow after 00:00.');
+                ->with('info', 'You have already submitted your carbon footprint for today.');
         }
 
         return view('emissions.create');
@@ -106,18 +106,9 @@ class EmissionController extends Controller
     {
         $user = Auth::user();
 
-        // Chart date range filter (defaults to last 7 days)
-        $chartStart = $request->filled('chart_start')
-            ? Carbon::parse($request->chart_start)->startOfDay()
-            : Carbon::now('Asia/Jakarta')->subDays(7)->startOfDay();
-
-        $chartEnd = $request->filled('chart_end')
-            ? Carbon::parse($request->chart_end)->endOfDay()
-            : Carbon::now('Asia/Jakarta')->endOfDay();
-
-        // Chart data: emissions for Carbon Trend within selected range
+        // Chart data: last 30 days emissions for Carbon Trend
         $chartData = $user->emissions()
-            ->whereBetween('emission_date', [$chartStart, $chartEnd])
+            ->where('emission_date', '>=', Carbon::now('Asia/Jakarta')->subDays(30))
             ->orderBy('emission_date')
             ->get(['emission_date', 'transport_emission', 'consumption_emission', 'energy_emission', 'total_emission', 'sdg_score']);
 
@@ -131,23 +122,23 @@ class EmissionController extends Controller
         $avgEmission = $recentEmissions->count() > 0 ? round($recentEmissions->avg('total_emission'), 2) : 0;
         $avgSdg = $recentEmissions->count() > 0 ? round($recentEmissions->avg('sdg_score'), 1) : 0;
 
-        // Performance status based on SDG Score
+        // Performance status based on 7-day average
         if ($avgEmission == 0 && $recentEmissions->count() == 0) {
             $perfStatus = 'no_data';
             $perfLabel = 'Belum Ada Data';
             $perfMessage = 'Mulai catat jejak karbon Anda untuk melihat performa emisi Anda!';
-        } elseif ($avgSdg >= 89) {
-            $perfStatus = 'low'; // Green
+        } elseif ($avgEmission <= 10) {
+            $perfStatus = 'low';
             $perfLabel = 'Kinerja Emisi: SANGAT BAIK 🌟';
-            $perfMessage = 'Luar biasa! Kontribusi SDG Anda sangat baik. Terus pertahankan kebiasaan ramah lingkungan ini!';
-        } elseif ($avgSdg >= 40) {
-            $perfStatus = 'medium'; // Yellow
+            $perfMessage = 'Luar biasa! Emisi karbon Anda tergolong rendah. Terus pertahankan kebiasaan ramah lingkungan ini!';
+        } elseif ($avgEmission <= 25) {
+            $perfStatus = 'medium';
             $perfLabel = 'Kinerja Emisi: CUKUP BAIK 👍';
-            $perfMessage = 'Bagus! Kontribusi SDG Anda cukup baik. Mari tingkatkan lagi pengurangan emisi Anda!';
+            $perfMessage = 'Bagus! Emisi karbon Anda masih dalam batas wajar. Mari tingkatkan lagi pengurangan emisi Anda!';
         } else {
-            $perfStatus = 'high'; // Red
+            $perfStatus = 'high';
             $perfLabel = 'Kinerja Emisi: PERLU PERHATIAN ⚠️';
-            $perfMessage = 'Wah, kontribusi SDG Anda tergolong rendah. Mari kurangi penggunaan energi berlebih demi bumi yang lebih sehat!';
+            $perfMessage = 'Wah, emisi karbon Anda sedang cukup tinggi. Mari kurangi penggunaan energi berlebih demi bumi yang lebih sehat!';
         }
 
         // Emission History table — build rows from individual emission categories
@@ -211,7 +202,7 @@ class EmissionController extends Controller
 
         return view('emissions.index', compact(
             'chartData', 'avgEmission', 'avgSdg', 'perfStatus', 'perfLabel', 'perfMessage',
-            'sevenDayStart', 'sevenDayEnd', 'paginatedRows', 'chartStart', 'chartEnd'
+            'sevenDayStart', 'sevenDayEnd', 'paginatedRows'
         ));
     }
 }

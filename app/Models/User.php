@@ -29,10 +29,6 @@ class User extends Authenticatable
         'level',
         'avatar',
         'bio',
-        'total_point',
-        'telp',
-        'city',
-        'postal_code',
     ];
 
     /**
@@ -57,10 +53,6 @@ class User extends Authenticatable
             'password' => 'hashed',
             'xp' => 'integer',
             'level' => 'integer',
-            'total_point' => 'integer',
-            'last_seen_at' => 'datetime',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
         ];
     }
 
@@ -88,13 +80,6 @@ class User extends Authenticatable
             $this->level >= 2 => 'Green Starter',
             default => 'Eco Beginner',
         };
-    }
-
-    // ── User Activity Helper ────────────────────────────────
-
-    public function isOnline(): bool
-    {
-        return $this->last_seen_at && $this->last_seen_at->gt(now()->subMinutes(5));
     }
 
     // ── Relationships ────────────────────────────────────────
@@ -144,15 +129,8 @@ class User extends Authenticatable
         return $this->belongsToMany(Post::class, 'post_likes')->withTimestamps();
     }
 
-
-
-    public function appNotifications(): HasMany
+    public function savedPosts(): BelongsToMany
     {
-        return $this->hasMany(Notification::class)->latest();
-    }
-
-    public function unreadNotifications(): HasMany
-    {
-        return $this->hasMany(Notification::class)->where('is_read', false);
+        return $this->belongsToMany(Post::class, 'post_saves')->withTimestamps();
     }
 }
