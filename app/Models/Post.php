@@ -57,9 +57,5 @@ class Post extends Model
         return $this->likes()->where('user_id', $user->id)->exists();
     }
 
-    public function isSavedBy(?User $user): bool
-    {
-        if (!$user) return false;
-        return $this->saves()->where('user_id', $user->id)->exists();
-    }
+
 }

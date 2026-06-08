@@ -85,7 +85,8 @@ class CommunityController extends Controller
     {
         $request->validate([
             'content' => ['required', 'string', 'min:1', 'max:2000'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image'   => ['nullable', 'image', 'max:10240'],           // Photo only (up to 10 MB)
+            'video'   => ['nullable', 'mimetypes:video/*', 'max:51200'], // Video only (up to 50 MB)
         ]);
 
         $data = [
