@@ -1,77 +1,29 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\BlogController;
-use App\Http\Controllers\CommunityController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EmissionController;
-use App\Http\Controllers\JourneyController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\QuizController;
 use Illuminate\Support\Facades\Route;
 
-// ── Landing Page ─────────────────────────────────────────────
 Route::get('/', function () {
     return view('welcome');
-})->name('home');
+});
 
-// ── Authenticated User Routes ────────────────────────────────
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Profile
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Carbon Footprint Calculator & Emissions
-    Route::get('/emissions', [EmissionController::class, 'index'])->name('emissions.index');
-    Route::get('/calculator', [EmissionController::class, 'create'])->name('calculator.create');
-    Route::post('/calculator', [EmissionController::class, 'store'])->name('calculator.store');
-    Route::get('/calculator/{emission}/result', [EmissionController::class, 'show'])->name('calculator.show');
-
-    // Daily Quiz
-    Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
-    Route::post('/quiz', [QuizController::class, 'submit'])->name('quiz.submit');
-
-    // Blogs
-    Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
-    Route::get('/blogs/my', [BlogController::class, 'myBlogs'])->name('blogs.my');
-    Route::get('/blogs/create', [BlogController::class, 'create'])->name('blogs.create');
-    Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
-    Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
-    Route::get('/blogs/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
-    Route::put('/blogs/{blog}', [BlogController::class, 'update'])->name('blogs.update');
-    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])->name('blogs.destroy');
-
-    // Community
-    Route::get('/community', [CommunityController::class, 'index'])->name('community.index');
-    Route::get('/community/{community}', [CommunityController::class, 'show'])->name('community.show');
-    Route::post('/community/{community}/join', [CommunityController::class, 'join'])->name('community.join');
-    Route::post('/community/{community}/leave', [CommunityController::class, 'leave'])->name('community.leave');
-    Route::post('/community/{community}/posts', [CommunityController::class, 'storePost'])->name('community.posts.store');
-    Route::post('/posts/{post}/like', [CommunityController::class, 'toggleLike'])->name('posts.like');
-    Route::post('/posts/{post}/save', [CommunityController::class, 'toggleSave'])->name('posts.save');
-    Route::post('/posts/{post}/comments', [CommunityController::class, 'storeComment'])->name('posts.comments.store');
-    Route::delete('/comments/{comment}', [CommunityController::class, 'destroyComment'])->name('comments.destroy');
-
-    // Climate Journey Map
-    Route::get('/journey', [JourneyController::class, 'index'])->name('journey.index');
-});
-
-// ── Admin Routes ─────────────────────────────────────────────
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/blogs', [AdminDashboardController::class, 'blogs'])->name('blogs');
-    Route::post('/blogs/{blog}/approve', [AdminDashboardController::class, 'approveBlog'])->name('blogs.approve');
-    Route::post('/blogs/{blog}/reject', [AdminDashboardController::class, 'rejectBlog'])->name('blogs.reject');
-    Route::get('/quizzes', [AdminDashboardController::class, 'quizzes'])->name('quizzes');
-    Route::post('/quizzes', [AdminDashboardController::class, 'storeQuiz'])->name('quizzes.store');
-    Route::delete('/quizzes/{quiz}', [AdminDashboardController::class, 'destroyQuiz'])->name('quizzes.destroy');
-    Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
-    Route::get('/leaderboard', [AdminDashboardController::class, 'leaderboard'])->name('leaderboard');
+    Route::get('/activity', function () {
+        return view('activity.index');
+    })->name('activity');
+    Route::get('/community', function () {
+        return view('community.index');
+    })->name('community');
+    Route::get('/blogs', function () {
+        return view('blogs.index');
+    })->name('blogs');
 });
 
 require __DIR__.'/auth.php';
