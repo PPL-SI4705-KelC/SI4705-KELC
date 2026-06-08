@@ -15,7 +15,9 @@ class StoreEmissionRequest extends FormRequest
     {
         return [
             'transport' => ['required', 'array'],
-            'transport.*' => ['nullable', 'string'],
+            'transport.*' => ['nullable'], // Allow array or string
+            'transport.main_vehicle' => ['nullable', 'array'],
+            'transport.main_vehicle.*' => ['string'],
             
             'consumption' => ['required', 'array'],
             'consumption.*' => ['nullable', 'string'],

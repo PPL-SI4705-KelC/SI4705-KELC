@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use App\Services\NotificationService;
 
 class AdminBlogController extends Controller
 {
@@ -29,7 +30,7 @@ class AdminBlogController extends Controller
         $search = $request->get('search');
 
         // ── Admin's Own Blogs (Published + Draft tabs) ──────────
-        $query = Blog::query()->with('user:id,name,username');
+        $query = Blog::query()->with('user:id,name,username,avatar');
 
         // Filter by tab
         if ($tab === 'published') {
@@ -53,7 +54,8 @@ class AdminBlogController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('short_description', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                  ->orWhere('content', 'like', "%{$search}%")
+                  ->orWhere('tags', 'like', "%{$search}%");
             });
         }
 
@@ -77,7 +79,7 @@ class AdminBlogController extends Controller
         // ── Pending User Submissions ────────────────────────────
         $pendingBlogs = Blog::where('status', Blog::STATUS_PENDING)
             ->whereHas('user', fn ($q) => $q->where('role', 'user'))
-            ->with('user:id,name,username,bio')
+            ->with('user:id,name,username,bio,avatar')
             ->latest()
             ->get();
 
@@ -233,6 +235,39 @@ class AdminBlogController extends Controller
     }
 
     /**
+     * Delete multiple blogs and their featured images.
+     */
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No articles selected for deletion.');
+        }
+
+        try {
+            $blogs = Blog::whereIn('id', $ids)->get();
+            $deletedCount = 0;
+
+            foreach ($blogs as $blog) {
+                // Delete featured image from storage
+                if ($blog->featured_image && Storage::disk('public')->exists($blog->featured_image)) {
+                    Storage::disk('public')->delete($blog->featured_image);
+                }
+                $blog->delete();
+                $deletedCount++;
+            }
+
+            return redirect()
+                ->route('admin.blogs.index')
+                ->with('success', "{$deletedCount} articles deleted successfully.");
+
+        } catch (\Throwable $e) {
+            Log::error('AdminBlogController@bulkDestroy failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete selected articles.');
+        }
+    }
+
+    /**
      * Approve a pending blog submission.
      *
      * CRITICAL: Uses DB::transaction to ensure atomicity.
@@ -259,6 +294,15 @@ class AdminBlogController extends Controller
                 $blogService = app(\App\Services\BlogService::class);
                 $xpAwarded = $blogService->awardBlogXp($blog);
             });
+
+            // 3. Send notifications to the blog author
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyBlogApproved($blog);
+            $notificationService->notifyXpEarned(
+                User::findOrFail($blog->user_id),
+                $xpAwarded,
+                'blog'
+            );
 
             return back()->with('success', "Blog approved! Author awarded {$xpAwarded} XP.");
 

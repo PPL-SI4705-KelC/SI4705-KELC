@@ -18,14 +18,25 @@ class BlogController extends Controller
     /**
      * List approved blogs.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $blogs = Blog::published()
-            ->with('user:id,name,username,level')
-            ->latest()
-            ->paginate(12);
+        $search = $request->input('search');
 
-        return view('blogs.index', compact('blogs'));
+        $blogs = Blog::published()
+            ->with('user:id,name,username,level,avatar')
+            ->when($search, function ($query, $search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('short_description', 'like', "%{$search}%")
+                      ->orWhere('content', 'like', "%{$search}%")
+                      ->orWhere('tags', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('blogs.index', compact('blogs', 'search'));
     }
 
     /**

@@ -42,7 +42,7 @@
                     @endif
                     
                     @if($blog->status === 'draft')
-                    <form method="POST" action="{{ route('blogs.destroy', $blog) }}" onsubmit="return confirm('Are you sure you want to delete this blog?')" class="inline">
+                    <form method="POST" action="{{ route('blogs.destroy', $blog) }}" data-confirm="Are you sure you want to delete this blog?" class="inline">
                         @csrf @method('DELETE')
                         <button type="submit" class="h-9 px-4 bg-white border border-red-200 text-red-500 font-bold text-xs rounded-full flex items-center justify-center hover:bg-red-50 transition-all shadow-sm">Delete</button>
                     </form>

@@ -120,6 +120,33 @@ class AdminDashboardController extends Controller
     }
 
     /**
+     * Delete multiple quizzes.
+     */
+    public function bulkDestroyQuizzes(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No quiz questions selected for deletion.');
+        }
+
+        try {
+            $quizzes = Quiz::whereIn('id', $ids)->get();
+            $deletedCount = 0;
+            foreach ($quizzes as $quiz) {
+                $quiz->delete();
+                $deletedCount++;
+            }
+
+            return redirect()
+                ->route('admin.quizzes')
+                ->with('success', "{$deletedCount} quiz questions deleted successfully.");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('AdminDashboardController@bulkDestroyQuizzes failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete selected quiz questions.');
+        }
+    }
+
+    /**
      * Manage users.
      */
     public function users(Request $request)
@@ -135,8 +162,143 @@ class AdminDashboardController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(20);
+        $users = $query->latest()->paginate(20)->withQueryString();
         return view('admin.users', compact('users'));
+    }
+
+    /**
+     * Show form to create new user.
+     */
+    public function createUser()
+    {
+        return view('admin.users.create');
+    }
+
+    /**
+     * Store new user.
+     */
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'role' => ['required', 'in:admin,user'],
+            'xp' => ['required', 'integer', 'min:0'],
+            'level' => ['required', 'integer', 'min:1'],
+            'bio' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        User::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'role' => $request->role,
+            'xp' => $request->xp,
+            'level' => $request->level,
+            'bio' => $request->bio,
+            'total_point' => 0,
+        ]);
+
+        return redirect()->route('admin.users')->with('success', 'User created successfully!');
+    }
+
+    /**
+     * Show form to edit user.
+     */
+    public function editUser(User $user)
+    {
+        return view('admin.users.edit', compact('user'));
+    }
+
+    /**
+     * Update user.
+     */
+    public function updateUser(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'password' => ['nullable', 'string', 'min:8'],
+            'role' => ['required', 'in:admin,user'],
+            'xp' => ['required', 'integer', 'min:0'],
+            'level' => ['required', 'integer', 'min:1'],
+            'bio' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'role' => $request->role,
+            'xp' => $request->xp,
+            'level' => $request->level,
+            'bio' => $request->bio,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('admin.users')->with('success', 'User updated successfully!');
+    }
+
+    /**
+     * Delete user.
+     */
+    public function destroyUser(User $user)
+    {
+        if ($user->id === Auth::id()) {
+            return redirect()->route('admin.users')->with('error', 'You cannot delete your own account.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users')->with('success', 'User deleted successfully.');
+    }
+
+    /**
+     * Delete multiple users.
+     */
+    public function bulkDestroyUsers(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No users selected for deletion.');
+        }
+
+        // Exclude the current logged in user
+        $ids = array_filter($ids, function($id) {
+            return $id != Auth::id();
+        });
+
+        if (empty($ids)) {
+            return back()->with('error', 'No valid users selected for deletion.');
+        }
+
+        try {
+            $users = User::whereIn('id', $ids)->get();
+            $deletedCount = 0;
+            foreach ($users as $user) {
+                if ($user->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->avatar)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+                }
+                $user->delete();
+                $deletedCount++;
+            }
+
+            return redirect()
+                ->route('admin.users')
+                ->with('success', "{$deletedCount} users deleted successfully.");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('AdminDashboardController@bulkDestroyUsers failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete selected users.');
+        }
     }
 
     /**
@@ -227,9 +389,6 @@ class AdminDashboardController extends Controller
         }
 
         $community = Community::create($data);
-        
-        $community->members()->attach(Auth::id(), ['role' => 'admin']);
-        $community->increment('member_count');
 
         return redirect()->route('admin.communities')->with('success', 'Community created successfully!');
     }
