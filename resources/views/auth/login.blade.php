@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-content">Welcome back</h1>
-        <p class="text-sm text-content-muted mt-1">Login to continue your climate journey</p>
+        <p class="text-sm text-content-muted mt-1">Sign in to continue your climate journey</p>
     </div>
 
     <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -33,7 +33,7 @@
         </div>
 
         <button type="submit" class="btn-primary w-full py-3">
-            Login
+            Sign in
         </button>
 
         <p class="text-center text-sm text-content-muted">
