@@ -1,75 +1,110 @@
-<button data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
+<button data-drawer-target="sidebar" data-drawer-toggle="sidebar" aria-controls="sidebar" type="button"
+    class="inline-flex items-center p-2 mt-2 ms-3 text-gray-500 rounded-xl sm:hidden hover:bg-gray-100 focus:outline-none">
     <span class="sr-only">Open sidebar</span>
-    <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
-    </svg>
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path></svg>
 </button>
 
-<aside id="default-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
-    <div class="h-full px-4 py-6 overflow-y-auto bg-white border-e border-gray-200 flex flex-col">
-        <div class="flex items-center mb-10 px-2">
-            <x-application-logo class="w-10 h-10 fill-current text-indigo-600" />
-            <span class="ms-3 text-xl font-bold tracking-tight text-gray-800">{{ config('app.name') }}</span>
-        </div>
-
-        <ul class="space-y-2 font-medium flex-1">
-            <x-nav-link-sidebar :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                <x-slot name="icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />
-                    </svg>
-                </x-slot>
-                Dashboard
-            </x-nav-link-sidebar>
-
-            <x-nav-link-sidebar :href="route('activity')" :active="request()->routeIs('activity')">
-                <x-slot name="icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </x-slot>
-                Activity
-            </x-nav-link-sidebar>
-
-            <x-nav-link-sidebar :href="route('community')" :active="request()->routeIs('community')">
-                <x-slot name="icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </x-slot>
-                Community
-            </x-nav-link-sidebar>
-
-            <x-nav-link-sidebar :href="route('blogs')" :active="request()->routeIs('blogs')">
-                <x-slot name="icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" />
-                    </svg>
-                </x-slot>
-                Blogs
-            </x-nav-link-sidebar>
-        </ul>
-
-        <div class="pt-4 border-t border-gray-200">
-            <div class="flex items-center px-2 mb-4">
-                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs uppercase">
-                    {{ substr(Auth::user()->name, 0, 2) }}
+<aside id="sidebar" class="fixed top-0 left-0 z-40 w-[280px] h-screen bg-white transition-transform -translate-x-full sm:translate-x-0 border-r border-gray-100 shadow-[4px_0_24px_rgba(0,0,0,0.01)]" aria-label="Sidebar">
+    <div class="h-full px-6 py-8 flex flex-col items-center overflow-y-auto">
+        
+        @if(request()->routeIs('admin.*'))
+            {{-- Admin Console Logo (Consistent with branding image) --}}
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 w-full px-2 mb-10 select-none">
+                <img src="{{ asset('images/logo.png') }}" alt="Act4Climate Logo" class="h-10 w-auto object-contain shrink-0" onerror="this.style.display='none'">
+                <div>
+                    <span class="text-[19px] font-black text-[#2D5A4C] tracking-tight leading-none block">Act4Climate</span>
+                    <span class="text-[8px] font-black text-gray-400 uppercase tracking-[0.18em] mt-1.5 block">ADMIN CONSOLE</span>
                 </div>
-                <div class="ms-3 overflow-hidden">
-                    <p class="text-sm font-medium text-gray-900 truncate">{{ Auth::user()->name }}</p>
-                    <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
-                </div>
+            </a>
+            
+            {{-- Admin Navigation Links (Mockup visual layout) --}}
+            <nav class="w-full space-y-4">
+                <a href="{{ route('admin.dashboard') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold text-sm tracking-wide transition-all {{ request()->routeIs('admin.dashboard') ? 'bg-[#2D5A4C] text-white shadow-sm' : 'text-[#2D5A4C] hover:bg-gray-50' }}">
+                    Dashboard
+                </a>
+                <a href="{{ route('admin.communities') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold text-sm tracking-wide transition-all {{ request()->routeIs('admin.communities*') ? 'bg-[#2D5A4C] text-white shadow-sm' : 'text-[#2D5A4C] hover:bg-gray-50' }}">
+                    Community
+                </a>
+                <a href="{{ route('admin.blogs.index') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold text-sm tracking-wide transition-all {{ request()->routeIs('admin.blogs*') ? 'bg-[#2D5A4C] text-white shadow-sm' : 'text-[#2D5A4C] hover:bg-gray-50' }}">
+                    Blogs
+                </a>
+                <a href="{{ route('admin.quizzes') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold text-sm tracking-wide transition-all {{ request()->routeIs('admin.quizzes*') ? 'bg-[#2D5A4C] text-white shadow-sm' : 'text-[#2D5A4C] hover:bg-gray-50' }}">
+                    Quiz
+                </a>
+                <a href="{{ route('admin.users') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold text-sm tracking-wide transition-all {{ request()->routeIs('admin.users*') ? 'bg-[#2D5A4C] text-white shadow-sm' : 'text-[#2D5A4C] hover:bg-gray-50' }}">
+                    User Management
+                </a>
+            </nav>
+            
+            {{-- Back to App & Profile Widget at the bottom --}}
+            <div class="w-full mt-auto pt-4 border-t border-gray-100 flex flex-col gap-2">
+
+                <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    @csrf
+                    <button type="submit" class="w-full flex justify-center items-center gap-2 py-2 px-4 rounded-xl font-bold text-xs text-red-500 hover:bg-red-50 transition-all">
+                        Logout
+                    </button>
+                </form>
             </div>
             
-            <form method="POST" action="{{ route('logout') }}">
+        @else
+            {{-- User Side Bar Logo --}}
+            @if(request()->has('preview'))
+                <div class="flex items-center justify-center w-full py-4 mb-10 bg-white rounded-[20px] shadow-[0_4px_24px_-4px_rgba(0,0,0,0.08)] border border-gray-50 opacity-80 select-none">
+                    <x-application-logo class="scale-90" />
+                </div>
+            @else
+                <a href="{{ route('dashboard') }}" class="flex items-center justify-center w-full py-4 mb-10 bg-white rounded-[20px] shadow-[0_4px_24px_-4px_rgba(0,0,0,0.08)] border border-gray-50">
+                    <x-application-logo class="scale-90" />
+                </a>
+            @endif
+
+            {{-- User Navigation Links --}}
+            <nav class="flex-1 w-full space-y-4">
+                @if(request()->has('preview'))
+                    <a href="javascript:void(0)" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold text-gray-400 opacity-50 cursor-not-allowed pointer-events-none">
+                        Dashboard
+                    </a>
+                    <a href="javascript:void(0)" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold text-gray-400 opacity-50 cursor-not-allowed pointer-events-none">
+                        Activity
+                    </a>
+                    <a href="javascript:void(0)" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold bg-[#2A5C4D] text-white pointer-events-none">
+                        Community
+                    </a>
+                    <a href="javascript:void(0)" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold text-gray-400 opacity-50 cursor-not-allowed pointer-events-none">
+                        Blogs
+                    </a>
+                @else
+                    <a href="{{ route('dashboard') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold {{ request()->routeIs('dashboard') || request()->routeIs('calculator.*') ? 'bg-[#2A5C4D] text-white' : 'text-[#2A5C4D] hover:bg-gray-50' }}">
+                        Dashboard
+                    </a>
+                    <a href="{{ route('emissions.index') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold {{ request()->routeIs('emissions.*') ? 'bg-[#2A5C4D] text-white' : 'text-[#2A5C4D] hover:bg-gray-50' }}">
+                        Activity
+                    </a>
+                    <a href="{{ route('community.index') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold {{ request()->routeIs('community.*') ? 'bg-[#2A5C4D] text-white' : 'text-[#2A5C4D] hover:bg-gray-50' }}">
+                        Community
+                    </a>
+                    <a href="{{ route('blogs.index') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold {{ request()->routeIs('blogs.*') ? 'bg-[#2A5C4D] text-white' : 'text-[#2A5C4D] hover:bg-gray-50' }}">
+                        Blogs
+                    </a>
+                @endif
+
+                @if(Auth::user()->isAdmin())
+                    <div class="pt-4 mt-4 border-t border-gray-100 w-full"></div>
+                    <a href="{{ route('admin.dashboard') }}" class="flex justify-center items-center w-full py-3.5 px-4 rounded-full font-bold text-xs text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition">
+                        🛡️ Admin Panel
+                    </a>
+                @endif
+            </nav>
+            
+            {{-- User Logout --}}
+            <form method="POST" action="{{ route('logout') }}" class="w-full mt-auto pt-4 border-t border-gray-100">
                 @csrf
-                <button type="submit" class="flex w-full items-center p-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors group">
-                    <svg class="w-5 h-5 text-red-500 transition duration-75 group-hover:text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    <span class="ms-3 font-medium">Logout</span>
+                <button type="submit" class="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-full font-bold text-red-500 hover:bg-red-50 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Logout
                 </button>
             </form>
-        </div>
+        @endif
     </div>
 </aside>
