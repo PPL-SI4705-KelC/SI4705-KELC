@@ -1,24 +1,12 @@
 <x-app-layout>
     <x-slot name="title">{{ $community->name }}</x-slot>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
-            {{-- Back Button --}}
-            <button onclick="history.back()"
-                class="w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-[#2D5A4C] hover:bg-[#2D5A4C]/5 hover:border-[#2D5A4C]/30 transition shrink-0"
-                title="Back">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                </svg>
-            </button>
-            <div>
-                <h1 class="text-xl font-bold text-content">{{ $community->name }}</h1>
-                <p class="text-sm text-content-muted">{{ $community->members_count ?? $community->member_count }} members</p>
-            </div>
+        <div>
+            <h1 class="text-xl font-bold text-content">{{ $community->name }}</h1>
+            <p class="text-sm text-content-muted">{{ $community->member_count }} members</p>
         </div>
         @if(!$isMember)
         <form method="POST" action="{{ route('community.join', $community) }}">@csrf <button class="btn-primary text-sm">Join Community</button></form>
-        @else
-        <form method="POST" action="{{ route('community.leave', $community) }}">@csrf <button class="btn-ghost text-red-500 text-sm border border-red-200 rounded-full px-4 py-1.5 hover:bg-red-50">Leave Community</button></form>
         @endif
     </x-slot>
     
@@ -66,16 +54,16 @@
                         </form>
                         
 
-                        <!-- Share -->
-                        <div x-data="{ copied: false }" class="relative">
-                            <button type="button" @click="navigator.clipboard.writeText('{{ route('community.show', $community) }}#post-{{ $post->id }}'); copied = true; setTimeout(() => copied = false, 2000);" class="flex items-center gap-1.5 hover:text-[#2D5A4C] transition ml-1">
-                                <svg class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                                </svg>
-                            </button>
-                            <span x-show="copied" style="display: none;" class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2.5 py-1 text-[10px] font-bold text-white bg-slate-900 rounded-md shadow-sm whitespace-nowrap z-30 transition-all duration-300">Link copied!</span>
-                        </div>
-                    </div>
+    <div class="max-w-2xl space-y-6 animate-fade-in">
+        @if($isMember)
+        {{-- Create Post --}}
+        <div class="card">
+            <form method="POST" action="{{ route('community.posts.store', $community) }}" enctype="multipart/form-data">
+                @csrf
+                <textarea name="content" rows="3" required class="form-input mb-3" placeholder="Share something with the community..."></textarea>
+                <div class="flex justify-between items-center">
+                    <input type="file" name="image" accept="image/*" class="text-sm text-content-muted">
+                    <button type="submit" class="btn-primary text-sm">Post</button>
                 </div>
                 
                 <!-- Comments Section (Right Side) -->
@@ -181,110 +169,63 @@
                         @endforelse
                     </div>
 
-                    <!-- Comment Input -->
-                    @if($isMember)
-                    <div class="border-t border-gray-200 p-3 bg-white">
-                        <form method="POST" action="{{ route('posts.comments.store', $post) }}">
-                            @csrf
-                            <div class="flex items-center gap-2 bg-gray-50 rounded-2xl px-3 py-1.5 focus-within:bg-white focus-within:shadow-sm transition-all">
-                                <input type="text" name="content"
-                                    id="comment-input-{{ $post->id }}"
-                                    required
-                                    placeholder="Comment here..."
-                                    class="flex-1 bg-transparent border-0 text-[12px] focus:ring-0 py-0.5 placeholder-gray-400 min-w-0"
-                                    autocomplete="off">
-                                <div class="flex items-center gap-1 shrink-0">
-                                    <button type="button"
-                                        onclick="insertMentionInComment({{ $post->id }})"
-                                        class="w-6 h-6 rounded-full hover:bg-[#2D5A4C]/10 flex items-center justify-center text-[#2D5A4C] font-bold text-[12px] leading-none select-none transition"
-                                        title="Mention someone">@</button>
-                                    <button type="submit" class="text-[#2D5A4C] hover:text-[#1e4237] transition">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    @else
-                    <div class="border-t border-gray-200 p-4 text-center bg-gray-50">
-                        <p class="text-xs text-gray-500">Join the community to comment.</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
-            @empty
-            <div class="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center">
-                <span class="text-5xl mb-4">🌱</span>
-                <p class="text-gray-500 font-medium">No posts in this community yet.</p>
-                @if($isMember)
-                <p class="text-gray-400 text-sm mt-1">Be the first to start the discussion!</p>
-                @endif
-            </div>
-            @endforelse
-            
-            <div class="mt-2">{{ $posts->links() }}</div>
-
-        </div>
-        
-        <!-- Right Sidebar (Fixed on Desktop) -->
-        <div class="hidden lg:block w-[280px] shrink-0 sticky top-32">
-            <script>
-                window.communitySidebarData = {
-                    online: {!! json_encode($onlineMembers->map(fn($u) => ['username' => $u->username, 'name' => $u->name, 'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D'])) !!},
-                    all: {!! json_encode($allMembers->map(fn($u) => ['username' => $u->username, 'name' => $u->name, 'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D', 'is_online' => $u->isOnline()])) !!}
-                };
-            </script>
-            <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 mb-6"
-                 x-data="communitySidebar('{{ route('community.sidebar', $community) }}', window.communitySidebarData.online, window.communitySidebarData.all)">
-                
-                <!-- Online Members -->
-                <div class="mb-6">
-                    <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-[12px] font-bold text-gray-400 uppercase tracking-wider">Online</h4>
-                        <span class="px-2.5 py-0.5 rounded-full bg-green-50 text-green-600 text-[10px] font-black flex items-center justify-center shadow-sm" x-text="onlineMembers.length">0</span>
-                    </div>
-                    <div class="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
-                        <template x-for="u in onlineMembers" :key="u.username">
-                            <div class="flex items-center gap-2.5">
-                                <div class="relative w-8 h-8 shrink-0">
-                                    <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-100 bg-white">
-                                        <img :src="u.avatar_url" alt="" class="w-full h-full object-cover">
-                                    </div>
-                                    <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
-                                </div>
-                                <p class="text-[13px] font-bold text-[#1E293B] truncate" x-text="'@' + u.username"></p>
-                            </div>
-                        </template>
-                        <div x-show="onlineMembers.length === 0" class="text-xs text-gray-400 italic py-1">
-                            No other members online.
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- All Community Members -->
+        {{-- Posts Feed --}}
+        @forelse($posts as $post)
+        <div class="card">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="avatar-primary text-xs">{{ substr($post->user->name, 0, 2) }}</div>
                 <div>
-                    <h4 class="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3">Members</h4>
-                    <div class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
-                        <template x-for="u in allMembers" :key="u.username">
-                            <div class="flex items-center gap-2.5">
-                                <div class="relative w-8 h-8 shrink-0">
-                                    <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-100 bg-white">
-                                        <img :src="u.avatar_url" alt="" class="w-full h-full object-cover">
-                                    </div>
-                                    <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white"
-                                          :class="u.is_online ? 'bg-green-400' : 'bg-gray-300'"
-                                          :title="u.is_online ? 'Online' : 'Offline'"></span>
-                                </div>
-                                <p class="text-[13px] font-bold text-[#1E293B] truncate" x-text="'@' + u.username"></p>
-                            </div>
-                        </template>
-                        <div x-show="allMembers.length === 0" class="text-xs text-gray-400 italic py-1">
-                            No members yet.
-                        </div>
+                    <p class="text-sm font-semibold text-content">{{ $post->user->name }}</p>
+                    <p class="text-xs text-content-muted">{{ $post->created_at->diffForHumans() }} · Lv.{{ $post->user->level }}</p>
+                </div>
+            </div>
+            <p class="text-content-body text-sm whitespace-pre-line">{{ $post->content }}</p>
+            @if($post->image)
+            <img src="{{ asset('storage/' . $post->image) }}" alt="" class="w-full rounded-xl mt-3 max-h-80 object-cover">
+            @endif
+
+            {{-- Actions --}}
+            <div class="flex items-center gap-4 mt-4 pt-3 border-t border-surface-border">
+                <form method="POST" action="{{ route('posts.like', $post) }}">@csrf
+                    <button class="flex items-center gap-1.5 text-sm {{ in_array($post->id, $likedPostIds) ? 'text-red-500' : 'text-content-muted hover:text-red-500' }} transition-colors">
+                        <svg class="w-4 h-4" fill="{{ in_array($post->id, $likedPostIds) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        {{ $post->likes_count }}
+                    </button>
+                </form>
+                <span class="flex items-center gap-1.5 text-sm text-content-muted">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    {{ $post->comments_count }}
+                </span>
+                <form method="POST" action="{{ route('posts.save', $post) }}">@csrf
+                    <button class="flex items-center gap-1.5 text-sm {{ in_array($post->id, $savedPostIds) ? 'text-accent-700' : 'text-content-muted hover:text-accent-700' }} transition-colors">
+                        <svg class="w-4 h-4" fill="{{ in_array($post->id, $savedPostIds) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                        Save
+                    </button>
+                </form>
+            </div>
+
+            {{-- Comments --}}
+            @if($post->comments->count() > 0)
+            <div class="mt-3 space-y-2">
+                @foreach($post->comments->take(3) as $comment)
+                <div class="flex gap-2 pl-2 border-l-2 border-surface-border">
+                    <div class="flex-1">
+                        <p class="text-xs"><span class="font-semibold text-content">{{ $comment->user->name }}</span> <span class="text-content-muted">· {{ $comment->created_at->diffForHumans() }}</span></p>
+                        <p class="text-sm text-content-body">{{ $comment->content }}</p>
                     </div>
                 </div>
-                
+                @endforeach
             </div>
+            @endif
+
+            {{-- Add Comment --}}
+            @if($isMember)
+            <form method="POST" action="{{ route('posts.comments.store', $post) }}" class="mt-3 flex gap-2">
+                @csrf
+                <input type="text" name="content" required placeholder="Add a comment..." class="form-input flex-1 py-2 text-sm">
+                <button type="submit" class="btn-ghost text-sm">Send</button>
+            </form>
+            @endif
         </div>
         
         <!-- Sticky Bottom Posting Widget -->
@@ -357,8 +298,8 @@
                 </div>
             </div>
         </div>
-        @endif
-        
+        @endforelse
+        {{ $posts->links() }}
     </div>
     
     <style>

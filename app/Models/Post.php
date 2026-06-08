@@ -38,9 +38,7 @@ class Post extends Model
 
     public function comments(): HasMany
     {
-        return $this->hasMany(Comment::class)
-            ->whereNull('parent_comment_id')
-            ->with(['user:id,name,username,avatar', 'replies']);
+        return $this->hasMany(Comment::class);
     }
 
     public function likes(): BelongsToMany
@@ -48,7 +46,10 @@ class Post extends Model
         return $this->belongsToMany(User::class, 'post_likes')->withTimestamps();
     }
 
-
+    public function saves(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'post_saves')->withTimestamps();
+    }
 
     public function isLikedBy(?User $user): bool
     {
