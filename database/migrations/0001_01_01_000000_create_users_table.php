@@ -14,13 +14,6 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-<<<<<<< HEAD
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
-=======
             $table->string('username')->unique();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
@@ -36,7 +29,6 @@ return new class extends Migration
             $table->index('role');
             $table->index('xp');
             $table->index('level');
->>>>>>> 14f647be00457c2be938ca3977220a2674dc60a5
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
