@@ -3,7 +3,7 @@
     <x-slot name="header">
         <div>
             <h1 class="text-xl font-bold text-content">Edit User Profile 👤</h1>
-            <p class="text-sm text-content-muted">Update details for user: {{ $user->name }}</p>
+            <p class="text-sm text-content-muted">Update details for user: {{ $user->username }}</p>
         </div>
     </x-slot>
 
@@ -15,30 +15,22 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="name" class="form-label">Full Name</label>
-                        <input id="name" type="text" name="name" value="{{ old('name', $user->name) }}" required class="form-input" placeholder="e.g. John Doe">
-                        <x-input-error :messages="$errors->get('name')" class="mt-1.5" />
-                    </div>
-
-                    <div>
                         <label for="username" class="form-label">Username</label>
                         <input id="username" type="text" name="username" value="{{ old('username', $user->username) }}" required class="form-input" placeholder="e.g. johndoe">
                         <x-input-error :messages="$errors->get('username')" class="mt-1.5" />
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="email" class="form-label">Email Address</label>
                         <input id="email" type="email" name="email" value="{{ old('email', $user->email) }}" required class="form-input" placeholder="e.g. johndoe@example.com">
                         <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
                     </div>
+                </div>
 
-                    <div>
-                        <label for="password" class="form-label">Password (Optional)</label>
-                        <input id="password" type="password" name="password" class="form-input" placeholder="Leave blank to keep current password">
-                        <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
-                    </div>
+                <div>
+                    <label for="password" class="form-label">Password (Optional)</label>
+                    <input id="password" type="password" name="password" class="form-input" placeholder="Leave blank to keep current password">
+                    <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

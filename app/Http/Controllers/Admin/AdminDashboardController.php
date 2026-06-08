@@ -180,7 +180,6 @@ class AdminDashboardController extends Controller
     public function storeUser(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
@@ -191,7 +190,7 @@ class AdminDashboardController extends Controller
         ]);
 
         User::create([
-            'name' => $request->name,
+            'name' => $request->username,
             'username' => $request->username,
             'email' => $request->email,
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
@@ -219,7 +218,6 @@ class AdminDashboardController extends Controller
     public function updateUser(Request $request, User $user)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'password' => ['nullable', 'string', 'min:8'],
@@ -230,7 +228,7 @@ class AdminDashboardController extends Controller
         ]);
 
         $data = [
-            'name' => $request->name,
+            'name' => $request->username,
             'username' => $request->username,
             'email' => $request->email,
             'role' => $request->role,
