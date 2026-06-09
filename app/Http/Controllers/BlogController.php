@@ -71,6 +71,9 @@ class BlogController extends Controller
 
         $action = $request->input('action', 'pending');
         $data = $request->validated();
+        $data['category'] = $data['category_id'];
+        $data['short_description'] = $data['excerpt'];
+        unset($data['category_id'], $data['excerpt']);
         $data['user_id'] = $user->id;
         $data['slug'] = Str::slug($data['title']) . '-' . Str::random(6);
         $data['status'] = ($action === 'draft') ? Blog::STATUS_DRAFT : Blog::STATUS_PENDING;
@@ -116,6 +119,9 @@ class BlogController extends Controller
 
         $action = $request->input('action', 'pending');
         $data = $request->validated();
+        $data['category'] = $data['category_id'];
+        $data['short_description'] = $data['excerpt'];
+        unset($data['category_id'], $data['excerpt']);
 
         if ($action === 'draft') {
             $data['status'] = Blog::STATUS_DRAFT;

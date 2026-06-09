@@ -15,7 +15,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('scripts')
 </head>
-<body class="font-sans antialiased text-gray-900 bg-gray-50">    
+<body class="font-sans antialiased text-gray-900 bg-gray-50">
+    
     <!-- Global Toast Notification System -->
     @if(session('info') || session('success') || session('error'))
         @php

@@ -37,6 +37,7 @@
           enctype="multipart/form-data"
           class="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12 mt-6"
           id="blog-form"
+          novalidate
           x-data="blogForm()">
         @csrf
 
@@ -55,13 +56,13 @@
                     </svg>
                     Category
                 </label>
-                <select id="category" name="category" class="form-input max-w-xs" required>
+                <select id="category" name="category_id" class="form-input max-w-xs" required>
                     <option value="">Select a category</option>
                     @foreach($categories as $cat)
-                        <option value="{{ $cat }}" {{ old('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                        <option value="{{ $cat }}" {{ old('category_id') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
                     @endforeach
                 </select>
-                <x-input-error :messages="$errors->get('category')" class="mt-1.5" />
+                <x-input-error :messages="$errors->get('category_id')" class="mt-1.5" />
             </div>
 
             <hr class="border-gray-100">
@@ -91,11 +92,11 @@
                     Short Description / Excerpt
                 </label>
                 <textarea id="short_description"
-                          name="short_description"
+                          name="excerpt"
                           rows="3"
                           class="form-input"
-                          placeholder="Write a brief description or excerpt (150-200 characters recommended)...">{{ old('short_description') }}</textarea>
-                <x-input-error :messages="$errors->get('short_description')" class="mt-1.5" />
+                          placeholder="Write a brief description or excerpt (150-200 characters recommended)...">{{ old('excerpt') }}</textarea>
+                <x-input-error :messages="$errors->get('excerpt')" class="mt-1.5" />
             </div>
 
             {{-- Content --}}
@@ -109,6 +110,7 @@
                 
                 <input id="content" type="hidden" name="content" value="{{ old('content') }}">
                 <trix-editor input="content"
+                             id="blog-content"
                              x-ref="trixEditor"
                              @trix-change="updateContentText"
                              @keyup="updateContentText"
@@ -217,6 +219,7 @@
             <div class="flex items-center gap-3">
                 <span class="text-xs text-gray-400 font-medium hidden sm:inline-block">Your blog will be reviewed by an admin before publishing.</span>
                 <button type="submit"
+                        id="submit-for-review"
                         onclick="document.getElementById('form-action').value='pending'"
                         class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">

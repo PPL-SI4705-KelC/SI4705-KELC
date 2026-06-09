@@ -14,9 +14,9 @@
                         <h3 class="font-bold text-[#1E293B] text-lg">{{ $blog->title }}</h3>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
                             {{ $blog->status === 'published' ? 'bg-[#e2f0ea] text-[#2D5A4C]' : 
-                              ($blog->status === 'pending' ? 'bg-[#fff8e1] text-[#E65100]' : 
+                              ($blog->status === 'pending' ? 'bg-[#fff8e1] text-[#E65100] badge-pending' : 
                               ($blog->status === 'draft' ? 'bg-gray-100 text-gray-600' : 'bg-red-50 text-red-600')) }}">
-                            {{ $blog->status }}
+                            {{ strtoupper($blog->status) }}
                         </span>
                     </div>
                     <div class="flex items-center gap-3 mt-2 text-xs font-medium text-gray-500">

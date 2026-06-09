@@ -38,7 +38,9 @@ class Post extends Model
 
     public function comments(): HasMany
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class)
+            ->whereNull('parent_comment_id')
+            ->with(['user:id,name,username,avatar', 'replies']);
     }
 
     public function likes(): BelongsToMany
@@ -46,10 +48,7 @@ class Post extends Model
         return $this->belongsToMany(User::class, 'post_likes')->withTimestamps();
     }
 
-    public function saves(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'post_saves')->withTimestamps();
-    }
+
 
     public function isLikedBy(?User $user): bool
     {
@@ -57,9 +56,13 @@ class Post extends Model
         return $this->likes()->where('user_id', $user->id)->exists();
     }
 
-    public function isSavedBy(?User $user): bool
+    public function isVideo(): bool
     {
-        if (!$user) return false;
-        return $this->saves()->where('user_id', $user->id)->exists();
+        if (!$this->image) {
+            return false;
+        }
+        
+        $extension = strtolower(pathinfo($this->image, PATHINFO_EXTENSION));
+        return in_array($extension, ['mp4', 'webm', 'ogg', 'mov', 'avi', 'm4v']);
     }
 }

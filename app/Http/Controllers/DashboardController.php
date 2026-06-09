@@ -62,19 +62,21 @@ class DashboardController extends Controller
         $energyEmission = $user->emissions()->sum('energy_emission');
         $foodEmission = $user->emissions()->sum('consumption_emission');
 
-        // Leaderboard by XP
-        $leaderboard = \App\Models\User::orderByDesc('xp')->limit(8)->get();
+        // Leaderboard by XP (only users)
+        $leaderboard = \App\Models\User::where('role', 'user')->orderByDesc('xp')->limit(8)->get();
         
-        // Ensure current user is in leaderboard or attach their rank
-        $userRank = \App\Models\User::where('xp', '>', $user->xp)->count() + 1;
+        // Ensure current user is in leaderboard or attach their rank (only counting users)
+        $userRank = \App\Models\User::where('role', 'user')->where('xp', '>', $user->xp)->count() + 1;
         $user->rank = $userRank;
 
-        if (!$leaderboard->contains('id', $user->id)) {
-            $leaderboard->push($user);
-        } else {
-            foreach($leaderboard as $idx => $u) {
-                if($u->id === $user->id) {
-                    $u->rank = $userRank;
+        if ($user->role === 'user') {
+            if (!$leaderboard->contains('id', $user->id)) {
+                $leaderboard->push($user);
+            } else {
+                foreach($leaderboard as $idx => $u) {
+                    if($u->id === $user->id) {
+                        $u->rank = $userRank;
+                    }
                 }
             }
         }
@@ -89,7 +91,7 @@ class DashboardController extends Controller
             ->first();
 
         // Blog stats
-        $publishedBlogs = $user->blogs()->approved()->count();
+        $publishedBlogs = $user->blogs()->published()->count();
         $pendingBlogs = $user->blogs()->pending()->count();
 
         return view('dashboard', compact(
@@ -112,5 +114,30 @@ class DashboardController extends Controller
             'trendPercentage',
             'trendDirection'
         ));
+    }
+
+    /**
+     * User Leaderboard page.
+     */
+    public function leaderboard(Request $request)
+    {
+        $user = Auth::user();
+        $query = \App\Models\User::where('role', 'user');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->orderByDesc('xp')->paginate(20)->withQueryString();
+
+        // Calculate current user's rank (only counting users)
+        $userRank = \App\Models\User::where('role', 'user')->where('xp', '>', $user->xp)->count() + 1;
+        $user->rank = $userRank;
+
+        return view('leaderboard', compact('users', 'user'));
     }
 }

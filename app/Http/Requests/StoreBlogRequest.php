@@ -17,9 +17,9 @@ class StoreBlogRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'min:5', 'max:255'],
-            'short_description' => ['nullable', 'string', 'min:10', 'max:500'],
+            'excerpt' => ['nullable', 'string', 'min:10', 'max:500'],
             'content' => ['required', 'string', 'min:300', 'max:10000'],
-            'category' => ['required', Rule::in(Blog::categories())],
+            'category_id' => ['required', Rule::in(Blog::categories())],
             'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
             'tags' => ['nullable', 'string', 'max:255'],
         ];
@@ -29,11 +29,11 @@ class StoreBlogRequest extends FormRequest
     {
         return [
             'title.min' => 'Title must be at least 5 characters.',
-            'short_description.min' => 'Short description must be at least 10 characters.',
+            'excerpt.min' => 'Short description must be at least 10 characters.',
             'content.min' => 'Content must be at least 300 characters long.',
             'content.max' => 'Content must not exceed 10,000 characters.',
-            'category.required' => 'Please select a category.',
-            'category.in' => 'Invalid category selected.',
+            'category_id.required' => 'Please select a category.',
+            'category_id.in' => 'Invalid category selected.',
             'featured_image.max' => 'Cover image must not exceed 5MB.',
         ];
     }

@@ -31,12 +31,22 @@
         $cPct = $dailyKg > 0 ? ($cKg / $dailyKg) * 100 : 0;
     @endphp
 
-    <!-- Use a full-width white background layout to match the clean mockup -->
-    <div class="min-h-screen bg-white text-center pb-20 pt-10" style="margin-top: -2rem;">
-        <div class="max-w-4xl mx-auto px-4">
+    <!-- Background Decorative Elements using Inline Styles to prevent Tailwind JIT compilation issues -->
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; pointer-events: none; z-index: 0;">
+        <!-- Top left blur -->
+        <div style="position: absolute; top: -100px; left: -100px; width: 400px; height: 400px; border-radius: 50%; background-color: rgba(209, 250, 229, 0.6); filter: blur(60px);"></div>
+        <!-- Bottom right blur -->
+        <div style="position: absolute; bottom: -150px; right: -100px; width: 500px; height: 500px; border-radius: 50%; background-color: rgba(254, 243, 199, 0.5); filter: blur(80px);"></div>
+        <!-- Center abstract subtle blob -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 600px; background-color: rgba(239, 246, 255, 0.4); filter: blur(100px);"></div>
+    </div>
+
+    <!-- Container with Alpine for Entrance Animations -->
+    <div x-data="{ mounted: false }" x-init="setTimeout(() => mounted = true, 100)" class="relative z-10 min-h-screen text-center pb-20 pt-10" style="margin-top: -2rem;">
+        <div class="mx-auto px-4 sm:px-6 lg:px-8" style="max-width: 72rem;">
             
             <!-- Icon Warning / Success -->
-            <div class="flex justify-center mb-6">
+            <div class="flex justify-center mb-6 transition-all duration-700 transform" :class="mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'">
                 @if($isOver)
                     <div class="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center shadow-[0_10px_20px_rgba(239,68,68,0.3)]">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -50,10 +60,10 @@
 
             <!-- Title & Subtitle -->
             <h1 class="text-4xl md:text-5xl font-black mb-4 {{ $isOver ? 'text-red-500' : 'text-[#2D5A4C]' }} tracking-tight">
-                {{ $isOver ? "Oh No! You're Over Target!" : "Great Job! You're On Target!" }}
+                {{ $isOver ? "Oh No! You're Over the Safe Limit!" : "Great Job! You're Within the Safe Limit!" }}
             </h1>
             <p class="text-gray-500 max-w-2xl mx-auto mb-10 text-sm md:text-base leading-relaxed">
-                Your current carbon footprint {{ $isOver ? 'exceeds' : 'is below' }} the sustainable target. The average person should aim for 5-8.2 kg of CO₂ per day to combat climate change effectively. Your actions today shape tomorrow's climate.
+                Your current carbon footprint {{ $isOver ? 'exceeds' : 'is below' }} the sustainable safe limit. The average person should aim for 5-8.2 kg of CO₂ per day to combat climate change effectively. Your actions today shape tomorrow's climate.
             </p>
 
             <!-- Main Impact Card -->
@@ -62,36 +72,43 @@
                     <div class="flex-1 text-center md:text-left md:border-r border-gray-100 pb-6 md:pb-0 md:pr-8">
                         <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Your Total Carbon Footprint</p>
                         <div class="flex items-baseline justify-center md:justify-start gap-2">
-                            <span class="text-6xl md:text-7xl font-black {{ $isOver ? 'text-red-500' : 'text-[#2D5A4C]' }} tracking-tighter">{{ number_format($dailyKg, 1) }}</span>
+                            <span class="text-6xl md:text-7xl font-black {{ $isOver ? 'text-red-500' : 'text-[#2D5A4C]' }} tracking-tighter">{{ number_format($dailyKg, 2) }}</span>
                             <span class="text-xl md:text-2xl font-bold text-gray-500">kg</span>
                         </div>
                         <p class="text-gray-400 text-sm mt-1 font-medium">CO₂ per day</p>
                     </div>
                     <div class="flex-1 text-center md:text-right">
                         <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                            {{ $isOver ? 'Above Target' : 'Of Target' }}
+                            {{ $isOver ? 'Above Safe Limit' : 'Within Safe Limit' }}
                         </p>
                         <div class="text-5xl md:text-6xl font-black text-orange-400 tracking-tighter mb-1">
-                            {{ number_format($percentOfTarget, 0) }}%
+                            {{ number_format($dailyKg / $target, 1) }}x
                         </div>
-                        <p class="text-gray-400 text-sm font-medium">of recommended limit</p>
+                        <p class="text-gray-400 text-sm font-medium">the recommended limit</p>
                     </div>
                 </div>
 
                 <!-- Progress Bar -->
-                <div class="relative pt-6">
-                    <div class="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex shadow-inner">
-                        <!-- Gradient fill -->
-                        <div class="h-full rounded-full bg-gradient-to-r from-green-300 via-yellow-400 to-red-400" style="width: {{ min(100, ($dailyKg / 25) * 100) }}%"></div>
+                <div class="relative pt-6 pb-2">
+                    <div class="h-4 w-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 rounded-full shadow-inner relative">
+                        <!-- Target Line Marker (8.2 kg) -->
+                        <div class="absolute top-0 bottom-0 border-l-2 border-dashed border-gray-800/40 z-10" style="left: {{ (8.2 / 25) * 100 }}%;"></div>
+                        
+                        <!-- User's Position Marker -->
+                        <div class="absolute top-1/2 w-5 h-5 bg-white rounded-full shadow-md border-4 border-gray-900 transition-all duration-1000 z-20" 
+                             style="left: {{ min(100, max(0, ($dailyKg / 25) * 100)) }}%; transform: translate(-50%, -50%);">
+                             <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow text-center whitespace-nowrap">
+                                 You: {{ number_format($dailyKg, 1) }}
+                                 <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                             </div>
+                        </div>
                     </div>
-                    <!-- Markers -->
-                    <div class="flex justify-between text-[10px] md:text-[11px] font-bold text-gray-400 mt-4 uppercase tracking-widest">
+                    <!-- Labels -->
+                    <div class="flex justify-between text-[10px] md:text-[11px] font-bold text-gray-400 mt-3 uppercase tracking-widest relative">
                         <span>0 kg</span>
-                        <span class="text-gray-800">Target: 8.2 kg</span>
+                        <span class="absolute text-gray-700" style="left: {{ (8.2 / 25) * 100 }}%; transform: translateX(-50%);">Safe Limit (8.2)</span>
                         <span>25+ kg</span>
                     </div>
-                    <!-- Visual Target Line Marker -->
-                    <div class="absolute top-5 bottom-8 border-l-2 border-gray-800/20" style="left: 30%;"></div>
                 </div>
             </div>
 
@@ -120,7 +137,7 @@
                     </p>
                     <div class="flex justify-between items-baseline border-b-2 border-gray-100 pb-3 mb-5">
                         <span class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">Carbon Output</span>
-                        <span class="text-base font-black text-blue-600">{{ number_format($tKg, 1) }} kg/day</span>
+                        <span class="text-base font-black text-blue-600">{{ number_format($tKg, 2) }} kg/day</span>
                     </div>
                     <div class="bg-blue-50/80 rounded-2xl p-4 mt-auto">
                         <p class="text-xs font-black text-blue-800 flex items-center gap-1.5 mb-2 uppercase tracking-wide">
@@ -148,7 +165,7 @@
                     </p>
                     <div class="flex justify-between items-baseline border-b-2 border-gray-100 pb-3 mb-5">
                         <span class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">Carbon Output</span>
-                        <span class="text-base font-black text-yellow-600">{{ number_format($eKg, 1) }} kg/day</span>
+                        <span class="text-base font-black text-yellow-600">{{ number_format($eKg, 2) }} kg/day</span>
                     </div>
                     <div class="bg-yellow-50/80 rounded-2xl p-4 mt-auto">
                         <p class="text-xs font-black text-yellow-800 flex items-center gap-1.5 mb-2 uppercase tracking-wide">
@@ -177,7 +194,7 @@
                     </p>
                     <div class="flex justify-between items-baseline border-b-2 border-gray-100 pb-3 mb-5">
                         <span class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">Carbon Output</span>
-                        <span class="text-base font-black text-[#2D5A4C]">{{ number_format($cKg, 1) }} kg/day</span>
+                        <span class="text-base font-black text-[#2D5A4C]">{{ number_format($cKg, 2) }} kg/day</span>
                     </div>
                     <div class="bg-[#2D5A4C]/10 rounded-2xl p-4 mt-auto">
                         <p class="text-xs font-black text-[#2D5A4C] flex items-center gap-1.5 mb-2 uppercase tracking-wide">
@@ -188,7 +205,6 @@
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
             <!-- End of Cards Grid -->
 
             <!-- Action Buttons -->
@@ -204,21 +220,6 @@
                 </a>
             </div>
 
-=======
-
-            <div class="mt-16 flex flex-col sm:flex-row justify-center items-center gap-4 no-print">
-                <button onclick="window.print()" class="inline-flex items-center justify-center gap-3 bg-white border-2 border-[#2D5A4C] text-[#2D5A4C] hover:bg-gray-50 px-10 py-4 rounded-xl font-black text-lg transition-all shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:-translate-y-1 w-full sm:w-auto cursor-pointer">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    Print / Save PDF
-                </button>
-                
-                <a href="{{ route('dashboard') }}" class="inline-flex items-center justify-center gap-3 bg-[#2D5A4C] hover:bg-[#1a382e] text-white px-10 py-4 rounded-xl font-black text-lg transition-all shadow-[0_8px_20px_rgba(45,90,76,0.3)] hover:shadow-[0_12px_25px_rgba(45,90,76,0.4)] hover:-translate-y-1 w-full sm:w-auto">
-                    Return to Dashboard
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                </a>
-            </div>
-            
->>>>>>> 23cf5aa1bc2c2abe1c6339f71e906666f4fde41d
         </div>
     </div>
 </x-calculator-layout>

@@ -162,10 +162,10 @@
                                         <p class="text-xs font-medium text-gray-500">Eco Warrior</p>
                                     </div>
                                 </div>
-                                <span class="text-[#2A5C4D] font-bold text-sm hover:underline cursor-pointer flex items-center gap-1 transition-colors hover:text-[#1e4237]">
-                                    Read Article
+                                <a href="{{ route('login') }}" class="text-[#2A5C4D] font-bold text-sm hover:underline flex items-center gap-1 transition-colors hover:text-[#1e4237]">
+                                    Read Blogs
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                                </span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -243,31 +243,35 @@
                     </div>
                 </div>
                 
-                <div class="relative reveal h-[500px] flex items-center justify-center">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-secondary-200 to-primary-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-                    <div class="relative grid grid-cols-2 gap-4 w-full max-w-md">
-                        <div class="bg-white p-6 rounded-3xl shadow-xl border border-white/50 transform translate-y-8 hover:-translate-y-2 transition-transform duration-300">
-                            <div class="text-4xl mb-4">🌱</div>
-                            <div class="font-bold text-lg">Level 1</div>
-                            <div class="text-sm text-content-muted">Eco Beginner</div>
+                <div class="relative reveal flex items-center justify-center py-4">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-secondary-200 to-primary-200 rounded-full blur-3xl opacity-20"></div>
+                    <div class="relative grid grid-cols-2 gap-5 w-full max-w-md">
+                        {{-- Level 1 --}}
+                        <div class="bg-white p-6 rounded-2xl shadow-card border border-surface-border hover:shadow-elevated hover:-translate-y-1 transition-all duration-300">
+                            <div class="text-3xl mb-3">🌱</div>
+                            <div class="font-bold text-base text-content">Level 1</div>
+                            <div class="text-sm text-content-muted mt-0.5">Eco Beginner</div>
                             <div class="mt-4 w-full bg-gray-100 rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width: 100%"></div></div>
                         </div>
-                        <div class="bg-white p-6 rounded-3xl shadow-xl border border-white/50 transform -translate-y-4 hover:-translate-y-8 transition-transform duration-300">
-                            <div class="text-4xl mb-4">🌿</div>
-                            <div class="font-bold text-lg">Level 2</div>
-                            <div class="text-sm text-content-muted">Green Starter</div>
+                        {{-- Level 2 --}}
+                        <div class="bg-white p-6 rounded-2xl shadow-card border border-surface-border hover:shadow-elevated hover:-translate-y-1 transition-all duration-300">
+                            <div class="text-3xl mb-3">🌿</div>
+                            <div class="font-bold text-base text-content">Level 2</div>
+                            <div class="text-sm text-content-muted mt-0.5">Green Starter</div>
                             <div class="mt-4 w-full bg-gray-100 rounded-full h-2"><div class="bg-secondary h-2 rounded-full" style="width: 60%"></div></div>
                         </div>
-                        <div class="bg-white p-6 rounded-3xl shadow-xl border border-white/50 transform translate-y-4 hover:-translate-y-2 transition-transform duration-300">
-                            <div class="text-4xl mb-4">🌍</div>
-                            <div class="font-bold text-lg">Level 3</div>
-                            <div class="text-sm text-content-muted">Eco Warrior</div>
+                        {{-- Level 3 --}}
+                        <div class="bg-white p-6 rounded-2xl shadow-card border border-surface-border hover:shadow-elevated hover:-translate-y-1 transition-all duration-300">
+                            <div class="text-3xl mb-3">🌍</div>
+                            <div class="font-bold text-base text-content">Level 3</div>
+                            <div class="text-sm text-content-muted mt-0.5">Eco Warrior</div>
                             <div class="mt-4 w-full bg-gray-100 rounded-full h-2"><div class="bg-gray-300 h-2 rounded-full" style="width: 0%"></div></div>
                         </div>
-                        <div class="bg-white p-6 rounded-3xl shadow-xl border border-white/50 transform -translate-y-8 hover:-translate-y-12 transition-transform duration-300 opacity-60">
-                            <div class="text-4xl mb-4">🌟</div>
-                            <div class="font-bold text-lg">Level 6</div>
-                            <div class="text-sm text-content-muted">Planet Guardian</div>
+                        {{-- Level 6 --}}
+                        <div class="bg-white p-6 rounded-2xl shadow-card border border-surface-border hover:shadow-elevated hover:-translate-y-1 transition-all duration-300 opacity-60">
+                            <div class="text-3xl mb-3">🌟</div>
+                            <div class="font-bold text-base text-content">Level 6</div>
+                            <div class="text-sm text-content-muted mt-0.5">Planet Guardian</div>
                             <div class="mt-4 w-full bg-gray-100 rounded-full h-2"><div class="bg-gray-300 h-2 rounded-full" style="width: 0%"></div></div>
                         </div>
                     </div>
