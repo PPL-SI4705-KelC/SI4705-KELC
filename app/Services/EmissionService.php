@@ -29,8 +29,8 @@ class EmissionService
 
     public function calculateSdgScore(float $totalEmission): float
     {
-        // 5 is best (100), 50 is worst (0)
-        $score = (1 - (($totalEmission - 5) / (50 - 5))) * 100;
+        // Calculate based on formula: (1 - ((E_total - 5) / (50 - (-5)))) * 100
+        $score = (1 - (($totalEmission - 5) / 55)) * 100;
         return round(max(0, min(100, $score)), 2);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminBlogController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommunityController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmissionController;
 use App\Http\Controllers\JourneyController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\QuizController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Community
     Route::get('/community', [CommunityController::class, 'index'])->name('community.index');
     Route::get('/community/{community}', [CommunityController::class, 'show'])->name('community.show');
+    Route::get('/community/{community}/sidebar', [CommunityController::class, 'sidebarStatus'])->name('community.sidebar');
     Route::post('/community/{community}/join', [CommunityController::class, 'join'])->name('community.join');
     Route::post('/community/{community}/leave', [CommunityController::class, 'leave'])->name('community.leave');
     Route::post('/community/{community}/posts', [CommunityController::class, 'storePost'])->name('community.posts.store');
@@ -57,20 +60,70 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/posts/{post}/comments', [CommunityController::class, 'storeComment'])->name('posts.comments.store');
     Route::delete('/comments/{comment}', [CommunityController::class, 'destroyComment'])->name('comments.destroy');
 
+    // Smart Community Redirect (for chat button)
+    Route::get('/community-redirect', function () {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $joinedCommunity = \App\Models\Community::whereHas('members', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->first();
+
+        if ($joinedCommunity) {
+            return redirect()->route('community.show', $joinedCommunity);
+        }
+
+        return redirect()->route('community.index');
+    })->name('community.redirect');
+
     // Climate Journey Map
     Route::get('/journey', [JourneyController::class, 'index'])->name('journey.index');
+
+    // Leaderboard
+    Route::get('/leaderboard', [DashboardController::class, 'leaderboard'])->name('leaderboard');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
 });
 
 // ── Admin Routes ─────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/blogs', [AdminDashboardController::class, 'blogs'])->name('blogs');
-    Route::post('/blogs/{blog}/approve', [AdminDashboardController::class, 'approveBlog'])->name('blogs.approve');
-    Route::post('/blogs/{blog}/reject', [AdminDashboardController::class, 'rejectBlog'])->name('blogs.reject');
+    
+    // Admin Blogs (dedicated controller)
+    Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs.index');
+    Route::get('/blogs/create', [AdminBlogController::class, 'create'])->name('blogs.create');
+    Route::post('/blogs', [AdminBlogController::class, 'store'])->name('blogs.store');
+    Route::get('/blogs/{blog}/edit', [AdminBlogController::class, 'edit'])->name('blogs.edit');
+    Route::put('/blogs/{blog}', [AdminBlogController::class, 'update'])->name('blogs.update');
+    Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->name('blogs.destroy');
+    Route::post('/blogs/{blog}/approve', [AdminBlogController::class, 'approve'])->name('blogs.approve');
+    Route::post('/blogs/{blog}/reject', [AdminBlogController::class, 'reject'])->name('blogs.reject');
+    
+    // Admin Quizzes
     Route::get('/quizzes', [AdminDashboardController::class, 'quizzes'])->name('quizzes');
     Route::post('/quizzes', [AdminDashboardController::class, 'storeQuiz'])->name('quizzes.store');
+    Route::get('/quizzes/{quiz}/edit', [AdminDashboardController::class, 'editQuiz'])->name('quizzes.edit');
+    Route::put('/quizzes/{quiz}', [AdminDashboardController::class, 'updateQuiz'])->name('quizzes.update');
     Route::delete('/quizzes/{quiz}', [AdminDashboardController::class, 'destroyQuiz'])->name('quizzes.destroy');
+    
+    // Admin Communities
+    Route::get('/communities', [AdminDashboardController::class, 'communities'])->name('communities');
+    Route::get('/communities/create', [AdminDashboardController::class, 'createCommunity'])->name('communities.create');
+    Route::post('/communities', [AdminDashboardController::class, 'storeCommunity'])->name('communities.store');
+    Route::get('/communities/{community}/edit', [AdminDashboardController::class, 'editCommunity'])->name('communities.edit');
+    Route::put('/communities/{community}', [AdminDashboardController::class, 'updateCommunity'])->name('communities.update');
+    Route::delete('/communities/{community}', [AdminDashboardController::class, 'destroyCommunity'])->name('communities.destroy');
+    Route::post('/communities/{community}/toggle-status', [AdminDashboardController::class, 'toggleCommunityStatus'])->name('communities.toggle-status');
+
+
     Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
+    Route::get('/users/create', [AdminDashboardController::class, 'createUser'])->name('users.create');
+    Route::post('/users', [AdminDashboardController::class, 'storeUser'])->name('users.store');
+    Route::get('/users/{user}/edit', [AdminDashboardController::class, 'editUser'])->name('users.edit');
+    Route::put('/users/{user}', [AdminDashboardController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [AdminDashboardController::class, 'destroyUser'])->name('users.destroy');
     Route::get('/leaderboard', [AdminDashboardController::class, 'leaderboard'])->name('leaderboard');
 });
 

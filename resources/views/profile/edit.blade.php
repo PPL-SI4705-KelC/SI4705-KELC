@@ -1,23 +1,6 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+<x-calculator-layout x-data="{ showConfirmModal: false }">
+    <x-slot name="title">Profile Settings - Act4Climate</x-slot>
 
-<<<<<<< HEAD
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-=======
     <!-- Custom Top Header -->
     <div class="w-full bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-4 sticky top-0 z-50 shadow-sm">
         <a href="{{ route('dashboard') }}" class="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition">
@@ -43,12 +26,16 @@
             <div class="w-full md:w-[320px] shrink-0">
                 <div class="bg-white rounded-[24px] p-8 border border-gray-100 shadow-[0_4px_24px_rgb(0,0,0,0.04)] text-center relative">
                     <!-- Avatar -->
-                    <div class="relative w-32 h-32 mx-auto mb-5">
+                    <div class="relative w-32 h-32 mx-auto mb-5 group">
                         <div class="w-full h-full rounded-full overflow-hidden border-4 border-gray-50 shadow-sm bg-gray-200">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=E2E8F0&color=2A5C4D&size=128" alt="Avatar" class="w-full h-full object-cover">
+                            @if(Auth::user()->avatar)
+                                <img id="avatar-preview" src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                            @else
+                                <img id="avatar-preview" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=E2E8F0&color=2A5C4D&size=128" alt="Avatar" class="w-full h-full object-cover">
+                            @endif
                         </div>
                         <!-- Camera Icon -->
-                        <button class="absolute bottom-1 right-1 w-9 h-9 bg-[#2A5C4D] rounded-full border-[3px] border-white flex items-center justify-center text-white hover:bg-[#1e4237] transition shadow-sm cursor-pointer">
+                        <button onclick="document.getElementById('avatar-input').click()" class="absolute bottom-1 right-1 w-9 h-9 bg-[#2A5C4D] rounded-full border-[3px] border-white flex items-center justify-center text-white hover:bg-[#1e4237] transition shadow-sm cursor-pointer z-10">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         </button>
                     </div>
@@ -92,9 +79,11 @@
                 <div class="bg-white rounded-[24px] p-8 md:p-10 border border-gray-100 shadow-[0_4px_24px_rgb(0,0,0,0.04)] h-full relative">
                     <h3 class="text-xl font-black text-gray-900 tracking-tight mb-8">Personal Information</h3>
 
-                    <form id="profile-update-form" method="post" action="{{ route('profile.update') }}" class="space-y-6">
+                    <form id="profile-update-form" method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-6">
                         @csrf
                         @method('patch')
+                        
+                        <input type="file" id="avatar-input" name="avatar" accept="image/jpeg,image/gif,image/webp" class="hidden" onchange="previewAvatar(event)">
 
                         <!-- Username -->
                         <div>
@@ -113,7 +102,7 @@
                         <!-- Telp -->
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Telp</label>
-                            <input type="text" name="telp" value="+62 812 3456 7890" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D] text-gray-900 transition-colors placeholder:text-gray-400 font-medium" placeholder="+62 812 3456 7890">
+                            <input type="text" name="telp" value="{{ old('telp', Auth::user()->telp) }}" oninput="this.value = this.value.replace(/[^0-9\+\s]/g, '')" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D] text-gray-900 transition-colors placeholder:text-gray-400 font-medium" placeholder="+62 812 3456 7890">
                         </div>
 
                         <!-- City & Postal Code -->
@@ -122,32 +111,24 @@
                                 <label class="block text-sm font-bold text-gray-700 mb-2">City</label>
                                 <div class="relative">
                                     <select name="city" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D] text-gray-900 appearance-none transition-colors font-medium">
-                                        <option>Jakarta</option>
-                                        <option>Bandung</option>
-                                        <option>Surabaya</option>
-                                        <option>Yogyakarta</option>
-                                        <option>Bali</option>
+                                        <option value="" {{ old('city', Auth::user()->city) == '' ? 'selected' : '' }}>Select City</option>
+                                        <option value="Jakarta" {{ old('city', Auth::user()->city) == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                                        <option value="Bandung" {{ old('city', Auth::user()->city) == 'Bandung' ? 'selected' : '' }}>Bandung</option>
+                                        <option value="Surabaya" {{ old('city', Auth::user()->city) == 'Surabaya' ? 'selected' : '' }}>Surabaya</option>
+                                        <option value="Yogyakarta" {{ old('city', Auth::user()->city) == 'Yogyakarta' ? 'selected' : '' }}>Yogyakarta</option>
+                                        <option value="Bali" {{ old('city', Auth::user()->city) == 'Bali' ? 'selected' : '' }}>Bali</option>
                                     </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                    </div>
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Postal Code</label>
-                                <input type="text" name="postal_code" value="12345" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D] text-gray-900 transition-colors placeholder:text-gray-400 font-medium" placeholder="12345">
+                                <input type="text" name="postal_code" value="{{ old('postal_code', Auth::user()->postal_code) }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D] text-gray-900 transition-colors placeholder:text-gray-400 font-medium" placeholder="12345">
                             </div>
-                        </div>
-
-                        <!-- Address -->
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Address</label>
-                            <textarea name="address" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D] text-gray-900 transition-colors placeholder:text-gray-400 resize-none font-medium" placeholder="Jl. Sudirman No. 123, Jakarta Pusat">Jl. Sudirman No. 123, Jakarta Pusat</textarea>
                         </div>
 
                         <!-- Action Buttons -->
                         <div class="flex items-center gap-4 pt-6 mt-8">
-                            <button type="button" @click="showConfirmModal = true" class="flex-1 inline-flex items-center justify-center gap-2 bg-[#2A5C4D] text-white px-8 py-3.5 rounded-xl font-bold hover:bg-[#1e4237] transition shadow-[0_4px_14px_rgba(42,92,77,0.3)]">
+                            <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-[#2A5C4D] text-white px-8 py-3.5 rounded-xl font-bold hover:bg-[#1e4237] transition shadow-[0_4px_14px_rgba(42,92,77,0.3)]">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                                 Save Changes
                             </button>
@@ -181,71 +162,22 @@
                             </div>
                         @endif
                     </form>
->>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
                 </div>
             </div>
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
         </div>
     </div>
-<<<<<<< HEAD
-</x-app-layout>
-=======
 
-    <!-- Confirmation Modal -->
-    <div x-show="showConfirmModal" 
-         class="fixed inset-0 z-[100] overflow-y-auto" 
-         style="display: none;">
-        
-        <!-- Backdrop -->
-        <div x-show="showConfirmModal" 
-             x-transition:enter="ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" 
-             @click="showConfirmModal = false"></div>
-
-        <!-- Modal Content -->
-        <div class="flex min-h-full items-center justify-center p-4">
-            <div x-show="showConfirmModal"
-                 x-transition:enter="ease-out duration-300"
-                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                 x-transition:leave="ease-in duration-200"
-                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 class="relative transform overflow-hidden rounded-[32px] bg-white p-8 text-center shadow-2xl transition-all max-w-sm w-full">
-                
-                <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#e8f3ef] mb-6">
-                    <svg class="h-10 w-10 text-[#2A5C4D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-
-                <h3 class="text-2xl font-black text-gray-900 mb-2">Simpan Perubahan?</h3>
-                <p class="text-gray-500 mb-8 font-medium">Apakah Anda yakin ingin menyimpan perubahan pada profil Anda?</p>
-
-                <div class="flex flex-col gap-3">
-                    <button type="button" 
-                            @click="document.getElementById('profile-update-form').submit()" 
-                            class="w-full bg-[#2A5C4D] text-white py-4 rounded-2xl font-bold hover:bg-[#1e4237] transition shadow-lg shadow-[#2A5C4D]/20">
-                        Simpan
-                    </button>
-                    <button type="button" 
-                            @click="showConfirmModal = false" 
-                            class="w-full bg-white border-2 border-gray-100 text-gray-500 py-4 rounded-2xl font-bold hover:bg-gray-50 transition">
-                        Kembali
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <script>
+        function previewAvatar(event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatar-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 </x-calculator-layout>
->>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f

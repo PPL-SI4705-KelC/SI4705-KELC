@@ -15,10 +15,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('scripts')
 </head>
-<<<<<<< HEAD
 <body class="font-sans antialiased text-gray-900 bg-gray-50">
-=======
-<body class="font-sans antialiased text-gray-900 bg-gray-50">    
+    
     <!-- Global Toast Notification System -->
     @if(session('info') || session('success') || session('error'))
         @php
@@ -74,7 +72,6 @@
         </div>
     @endif
 
->>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
     <main>
         {{ $slot }}
     </main>

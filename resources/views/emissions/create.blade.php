@@ -35,15 +35,64 @@
                 <form id="emission-form" method="POST" action="{{ route('calculator.store') }}">
                     @csrf
                     
+                    @if ($errors->any())
+                        <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-md">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Terdapat kesalahan pada input Anda:</h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    
                     <!-- Hidden inputs generated dynamically based on formData -->
                     <template x-for="(value, key) in formData.transport" :key="'t'+key">
-                        <input type="hidden" :name="`transport[${key}]`" :value="value">
+                        <div>
+                            <template x-if="Array.isArray(value)">
+                                <template x-for="item in value">
+                                    <input type="hidden" :name="`transport[${key}][]`" :value="item">
+                                </template>
+                            </template>
+                            <template x-if="!Array.isArray(value)">
+                                <input type="hidden" :name="`transport[${key}]`" :value="value">
+                            </template>
+                        </div>
                     </template>
                     <template x-for="(value, key) in formData.consumption" :key="'c'+key">
-                        <input type="hidden" :name="`consumption[${key}]`" :value="value">
+                        <div>
+                            <template x-if="Array.isArray(value)">
+                                <template x-for="item in value">
+                                    <input type="hidden" :name="`consumption[${key}][]`" :value="item">
+                                </template>
+                            </template>
+                            <template x-if="!Array.isArray(value)">
+                                <input type="hidden" :name="`consumption[${key}]`" :value="value">
+                            </template>
+                        </div>
                     </template>
                     <template x-for="(value, key) in formData.energy" :key="'e'+key">
-                        <input type="hidden" :name="`energy[${key}]`" :value="value">
+                        <div>
+                            <template x-if="Array.isArray(value)">
+                                <template x-for="item in value">
+                                    <input type="hidden" :name="`energy[${key}][]`" :value="item">
+                                </template>
+                            </template>
+                            <template x-if="!Array.isArray(value)">
+                                <input type="hidden" :name="`energy[${key}]`" :value="value">
+                            </template>
+                        </div>
                     </template>
 
                     <!-- Question Display -->
@@ -70,7 +119,7 @@
                             <template x-for="option in currentQuestion.options" :key="option.value">
                                 <label class="group relative flex items-center cursor-pointer rounded-2xl p-5 transition-all duration-200 border border-transparent hover:bg-gray-50"
                                        :class="isSelected(option.value) ? 'bg-gray-50 shadow-sm ring-1 ring-gray-200' : ''">
-                                    <input type="radio" :name="currentQuestion.id" :value="option.value" class="sr-only" @change="selectOption(option.value)">
+                                    <input :type="currentQuestion.multiple ? 'checkbox' : 'radio'" :name="currentQuestion.id" :value="option.value" class="sr-only" @change="selectOption(option.value)">
                                     
                                     <div class="flex flex-1 items-start gap-4">
                                         <div class="mt-0.5 text-gray-400 group-hover:text-[#2D5A4C] transition-colors" :class="isSelected(option.value) ? 'text-[#2D5A4C]' : ''">
@@ -94,7 +143,7 @@
                         
                         <button x-show="!isLastStep()" type="button" @click="nextStep" :disabled="!hasAnswer()" 
                                 class="px-8 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 text-sm"
-                                :class="hasAnswer() ? 'bg-[#8BA89A] hover:bg-[#2D5A4C] text-white shadow-sm' : 'bg-[#8BA89A]/60 text-white cursor-not-allowed'">
+                                :class="hasAnswer() ? 'bg-[#2D5A4C] hover:bg-[#1e4237] text-white shadow-sm' : 'bg-[#8BA89A]/60 text-white cursor-not-allowed'">
                             Next <span>&rarr;</span>
                         </button>
 
@@ -110,11 +159,11 @@
 
         <!-- Floating Bottom Categories -->
         <div class="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-12 z-20">
-            <div class="flex flex-col items-center gap-2 transition-all duration-300" :class="currentQuestion.group === 'energy' ? 'opacity-100' : 'opacity-40 grayscale'">
-                <div class="w-16 h-12 rounded-lg flex items-center justify-center transition-colors" :class="currentQuestion.group === 'energy' ? 'bg-[#2D5A4C] text-white shadow-lg' : 'bg-transparent text-gray-900'">
-                    <span class="text-2xl">⚡</span>
+            <div class="flex flex-col items-center gap-2 transition-all duration-300" :class="currentQuestion.group === 'transport' ? 'opacity-100' : 'opacity-40 grayscale'">
+                <div class="w-16 h-12 rounded-lg flex items-center justify-center transition-colors" :class="currentQuestion.group === 'transport' ? 'bg-[#2D5A4C] text-white shadow-lg' : 'bg-transparent text-gray-900'">
+                    <span class="text-2xl">🚗</span>
                 </div>
-                <span class="text-[11px] font-bold text-gray-800">Energy</span>
+                <span class="text-[11px] font-bold text-gray-800">Transport</span>
             </div>
             <div class="flex flex-col items-center gap-2 transition-all duration-300" :class="currentQuestion.group === 'consumption' ? 'opacity-100' : 'opacity-40 grayscale'">
                 <div class="w-16 h-12 rounded-lg flex items-center justify-center transition-colors" :class="currentQuestion.group === 'consumption' ? 'bg-[#2D5A4C] text-white shadow-lg' : 'bg-transparent text-gray-900'">
@@ -122,11 +171,11 @@
                 </div>
                 <span class="text-[11px] font-bold text-gray-800">Food</span>
             </div>
-            <div class="flex flex-col items-center gap-2 transition-all duration-300" :class="currentQuestion.group === 'transport' ? 'opacity-100' : 'opacity-40 grayscale'">
-                <div class="w-16 h-12 rounded-lg flex items-center justify-center transition-colors" :class="currentQuestion.group === 'transport' ? 'bg-[#2D5A4C] text-white shadow-lg' : 'bg-transparent text-gray-900'">
-                    <span class="text-2xl">🚗</span>
+            <div class="flex flex-col items-center gap-2 transition-all duration-300" :class="currentQuestion.group === 'energy' ? 'opacity-100' : 'opacity-40 grayscale'">
+                <div class="w-16 h-12 rounded-lg flex items-center justify-center transition-colors" :class="currentQuestion.group === 'energy' ? 'bg-[#2D5A4C] text-white shadow-lg' : 'bg-transparent text-gray-900'">
+                    <span class="text-2xl">⚡</span>
                 </div>
-                <span class="text-[11px] font-bold text-gray-800">Transport</span>
+                <span class="text-[11px] font-bold text-gray-800">Energy</span>
             </div>
         </div>
     </div>
@@ -136,7 +185,9 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('calculatorWizard', () => ({
                 formData: {
-                    transport: {},
+                    transport: {
+                        main_vehicle: []
+                    },
                     consumption: {},
                     energy: {}
                 },
@@ -145,12 +196,12 @@
                 get questions() {
                     return [
                         // --- TRANSPORT ---
-                        { id: 'main_vehicle', group: 'transport', categoryLabel: 'Transport', icon: '🚗', title: 'Main Transportation Today', subtitle: 'How did you mostly travel today?', options: [
+                        { id: 'main_vehicle', group: 'transport', categoryLabel: 'Transport', icon: '🚗', title: 'Main Transportation Today', subtitle: 'How did you travel today?', multiple: true, options: [
                             {value: 'car', label: 'Car', desc: 'Personal or ride-hailing'},
                             {value: 'motorcycle', label: 'Motorcycle', desc: 'Personal or ride-hailing'},
                             {value: 'none', label: 'No private vehicle', desc: 'Walk, bike, or fully public transit'}
                         ]},
-                        { id: 'car_type', group: 'transport', categoryLabel: 'Transport', icon: '🚙', title: 'What type of car?', subtitle: 'Select your vehicle type.', condition: () => this.formData.transport.main_vehicle === 'car', options: [
+                        { id: 'car_type', group: 'transport', categoryLabel: 'Transport', icon: '🚙', title: 'What type of car?', subtitle: 'Select your vehicle type.', condition: () => (this.formData.transport.main_vehicle || []).includes('car'), options: [
                             {value: 'electric', label: 'Electric Car'},
                             {value: 'plugin_hybrid', label: 'Plug-in Hybrid'},
                             {value: 'hybrid', label: 'Hybrid'},
@@ -158,11 +209,17 @@
                             {value: 'medium', label: 'Medium Car'},
                             {value: 'large', label: 'Large Car / SUV'}
                         ]},
-                        { id: 'motorcycle_type', group: 'transport', categoryLabel: 'Transport', icon: '🏍️', title: 'What type of motorcycle?', subtitle: 'Select your vehicle type.', condition: () => this.formData.transport.main_vehicle === 'motorcycle', options: [
+                        { id: 'car_duration', group: 'transport', categoryLabel: 'Transport', icon: '⏱️', title: 'Duration of Car Usage', subtitle: 'How much time did you spend in the car today?', condition: () => (this.formData.transport.main_vehicle || []).includes('car'), options: [
+                            {value: 'lt_1', label: '< 1 hour'},
+                            {value: '1_to_2', label: '1 - 2 hours'},
+                            {value: '2_to_4', label: '2 - 4 hours'},
+                            {value: 'gt_4', label: '> 4 hours'}
+                        ]},
+                        { id: 'motorcycle_type', group: 'transport', categoryLabel: 'Transport', icon: '🏍️', title: 'What type of motorcycle?', subtitle: 'Select your vehicle type.', condition: () => (this.formData.transport.main_vehicle || []).includes('motorcycle'), options: [
                             {value: 'electric', label: 'Electric Motorcycle'},
                             {value: 'gasoline', label: 'Gasoline Motorcycle'}
                         ]},
-                        { id: 'main_vehicle_duration', group: 'transport', categoryLabel: 'Transport', icon: '⏱️', title: 'Duration of Main Vehicle', subtitle: 'How much time did you spend in this vehicle today?', condition: () => ['car', 'motorcycle'].includes(this.formData.transport.main_vehicle), options: [
+                        { id: 'motorcycle_duration', group: 'transport', categoryLabel: 'Transport', icon: '⏱️', title: 'Duration of Motorcycle Usage', subtitle: 'How much time did you spend on the motorcycle today?', condition: () => (this.formData.transport.main_vehicle || []).includes('motorcycle'), options: [
                             {value: 'lt_1', label: '< 1 hour'},
                             {value: '1_to_2', label: '1 - 2 hours'},
                             {value: '2_to_4', label: '2 - 4 hours'},
@@ -266,24 +323,45 @@
 
                 hasAnswer() {
                     const q = this.currentQuestion;
-                    return this.formData[q.group][q.id] !== undefined && this.formData[q.group][q.id] !== '';
+                    const val = this.formData[q.group][q.id];
+                    if (q.multiple) {
+                        return Array.isArray(val) && val.length > 0;
+                    }
+                    return val !== undefined && val !== '';
                 },
 
                 isSelected(val) {
                     const q = this.currentQuestion;
-                    return this.formData[q.group][q.id] === val;
+                    const selected = this.formData[q.group][q.id];
+                    if (q.multiple) {
+                        return Array.isArray(selected) && selected.includes(val);
+                    }
+                    return selected === val;
                 },
 
                 selectOption(val) {
                     const q = this.currentQuestion;
-                    this.formData[q.group][q.id] = val;
-                    
-                    // Small delay for animation feedback
-                    setTimeout(() => {
-                        if (!this.isLastStep()) {
-                            this.nextStep();
+                    if (q.multiple) {
+                        let selected = this.formData[q.group][q.id];
+                        if (!Array.isArray(selected)) selected = [];
+                        
+                        if (val === 'none') {
+                            selected = ['none'];
+                        } else {
+                            // If they pick something else, remove 'none'
+                            selected = selected.filter(v => v !== 'none');
+                            
+                            const index = selected.indexOf(val);
+                            if (index > -1) {
+                                selected.splice(index, 1);
+                            } else {
+                                selected.push(val);
+                            }
                         }
-                    }, 350);
+                        this.formData[q.group][q.id] = selected;
+                    } else {
+                        this.formData[q.group][q.id] = val;
+                    }
                 },
 
                 nextStep() {

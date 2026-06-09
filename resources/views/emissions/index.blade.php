@@ -64,18 +64,64 @@
 
         {{-- Carbon Trend Chart --}}
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8" x-data="carbonChart()">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold text-[#2A5C4D]">Carbon Trend</h3>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-400 font-medium">View:</span>
-                    <select x-model="chartType" @change="updateChartType()" class="bg-[#f0faf5] text-[#2A5C4D] px-3 py-1.5 rounded-lg text-xs font-bold border border-[#2A5C4D]/10 focus:ring-0 focus:border-[#2A5C4D]/30 cursor-pointer outline-none">
-                        <option value="line">Line Chart</option>
-                        <option value="bar">Bar Chart</option>
-                        <option value="pie">Pie Chart</option>
-                    </select>
+            {{-- Header: Title + Chart Type Toggle --}}
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-[#2A5C4D]">Carbon Trend</h3>
+                    <p class="text-xs text-gray-400 mt-1">Visualize your carbon emissions over time</p>
+                </div>
+                {{-- Chart Type Pill Selector --}}
+                <div class="flex items-center bg-gray-100 rounded-xl p-1 gap-0.5">
+                    <button @click="chartType = 'line'; updateChartType()"
+                            :class="chartType === 'line' ? 'bg-[#2A5C4D] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                            class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 20h18"/></svg>
+                        Line
+                    </button>
+                    <button @click="chartType = 'bar'; updateChartType()"
+                            :class="chartType === 'bar' ? 'bg-[#2A5C4D] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                            class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6m8 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v10m14 0v-4a2 2 0 00-2-2h-2a2 2 0 00-2 2v4"/></svg>
+                        Bar
+                    </button>
+                    <button @click="chartType = 'pie'; updateChartType()"
+                            :class="chartType === 'pie' ? 'bg-[#2A5C4D] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                            class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                        Pie
+                    </button>
                 </div>
             </div>
-            <div class="relative" style="height: 320px;">
+
+            {{-- Date Range Filter --}}
+            <form method="GET" action="{{ route('emissions.index') }}" class="mb-6">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 p-4 bg-gradient-to-r from-[#f0faf5] to-[#f5faf8] rounded-2xl border border-[#2A5C4D]/8">
+                    {{-- Date Inputs --}}
+                    <div class="flex flex-1 items-end gap-2">
+                        <div class="flex-1 min-w-0">
+                            <label class="text-[11px] text-gray-500 font-bold uppercase tracking-wider block mb-1">From</label>
+                            <input type="date" name="chart_start" value="{{ $chartStart->format('Y-m-d') }}"
+                                   class="w-full bg-white text-gray-700 text-xs font-semibold px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D] transition outline-none">
+                        </div>
+                        <div class="flex items-center pb-2">
+                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <label class="text-[11px] text-gray-500 font-bold uppercase tracking-wider block mb-1">To</label>
+                            <input type="date" name="chart_end" value="{{ $chartEnd->format('Y-m-d') }}"
+                                   class="w-full bg-white text-gray-700 text-xs font-semibold px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#2A5C4D]/20 focus:border-[#2A5C4D] transition outline-none">
+                        </div>
+                        <button type="submit"
+                                class="flex items-center gap-1.5 bg-[#2A5C4D] hover:bg-[#1e4438] text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 shrink-0">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                            Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {{-- Chart Canvas --}}
+            <div class="relative" style="height: 340px;">
                 <canvas id="carbonTrendChart"></canvas>
             </div>
         </div>
@@ -173,10 +219,6 @@
                         return;
                     }
 
-<<<<<<< HEAD
-                    const labels = chartData.map(d => d.emission_date);
-=======
-<<<<<<< HEAD
                     // Format dates to clean 'dd MMM' format (e.g. '29 Apr')
                     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                     const labels = chartData.map(d => {
@@ -185,10 +227,6 @@
                         const month = monthNames[date.getMonth()];
                         return day + ' ' + month;
                     });
-=======
-                    const labels = chartData.map(d => d.emission_date);
->>>>>>> 23cf5aa1bc2c2abe1c6339f71e906666f4fde41d
->>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
                     const totals = chartData.map(d => parseFloat(d.total_emission));
 
                     const ctx = document.getElementById('carbonTrendChart').getContext('2d');
@@ -234,9 +272,6 @@
                                     cornerRadius: 10,
                                     displayColors: this.chartType === 'pie',
                                     callbacks: {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
                                         title: function(tooltipItems) {
                                             // Show full date in tooltip title
                                             const idx = tooltipItems[0].dataIndex;
@@ -244,9 +279,6 @@
                                             const date = new Date(raw);
                                             return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
                                         },
-=======
->>>>>>> 23cf5aa1bc2c2abe1c6339f71e906666f4fde41d
->>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
                                         label: function(ctx) {
                                             const val = ctx.parsed.y !== undefined ? ctx.parsed.y : ctx.parsed;
                                             return ' CO₂: ' + val.toFixed(2) + ' kg';

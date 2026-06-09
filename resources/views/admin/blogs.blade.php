@@ -1,16 +1,40 @@
 <x-app-layout>
-    <x-slot name="title">Manage Blogs</x-slot>
+    <x-slot name="title">Blog Management</x-slot>
     <x-slot name="header">
-        <h1 class="text-xl font-bold text-content">Blog Management</h1>
-        <div class="flex gap-2">
-            <a href="{{ route('admin.blogs', ['status' => 'pending']) }}" class="badge {{ $status === 'pending' ? 'badge-accent' : '' }} px-3 py-1.5 text-sm">Pending</a>
-            <a href="{{ route('admin.blogs', ['status' => 'approved']) }}" class="badge {{ $status === 'approved' ? 'badge-secondary' : '' }} px-3 py-1.5 text-sm">Approved</a>
-            <a href="{{ route('admin.blogs', ['status' => 'rejected']) }}" class="badge {{ $status === 'rejected' ? 'badge-danger' : '' }} px-3 py-1.5 text-sm">Rejected</a>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+            <div>
+                <h1 class="text-xl font-bold text-content">Blog Management</h1>
+                <p class="text-sm text-content-muted">Create and manage your climate action content</p>
+            </div>
+            <div>
+                <a href="{{ route('admin.blogs.create') }}" id="btn-add-new-blog" class="inline-flex items-center gap-2 bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.97]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                    </svg>
+                    Add New Blog
+                </a>
+            </div>
         </div>
     </x-slot>
 
-<<<<<<< HEAD
-    <div class="space-y-6 animate-fade-in pb-12" x-data="{ openRejectModal: false, rejectId: null, rejectTitle: '' }">
+    <div class="space-y-6 animate-fade-in pb-12" x-data="{ 
+        openRejectModal: false, 
+        rejectId: null, 
+        rejectTitle: '', 
+        selectedIds: [], 
+        selectAll: false,
+        toggleSelectAll() {
+            if (this.selectAll) {
+                this.selectedIds = Array.from(document.querySelectorAll('.blog-checkbox')).map(cb => parseInt(cb.value));
+            } else {
+                this.selectedIds = [];
+            }
+        },
+        updateSelectAll() {
+            const totalCheckboxes = document.querySelectorAll('.blog-checkbox').length;
+            this.selectAll = this.selectedIds.length > 0 && this.selectedIds.length === totalCheckboxes;
+        }
+    }">
 
         {{-- ══ Flash Messages ══════════════════════════════════════ --}}
         @if(session('success'))
@@ -26,29 +50,17 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                 </svg>
                 {{ session('success') }}
-=======
-    <div class="space-y-4 animate-fade-in">
-        @forelse($blogs as $blog)
-        <div class="card">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <h3 class="font-semibold text-content">{{ $blog->title }}</h3>
-                    <p class="text-sm text-content-muted mt-1">By {{ $blog->user->name }} · {{ $blog->created_at->format('d M Y') }}</p>
-                    <p class="text-sm text-content-body mt-2 line-clamp-2">{{ Str::limit(strip_tags($blog->content), 200) }}</p>
-                </div>
->>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
             </div>
-            @if($status === 'pending')
-            <div class="flex gap-2 mt-4 pt-4 border-t border-surface-border">
-                <form method="POST" action="{{ route('admin.blogs.approve', $blog) }}">@csrf
-                    <button class="btn-secondary text-sm">✓ Approve</button>
-                </form>
-                <form method="POST" action="{{ route('admin.blogs.reject', $blog) }}" class="flex-1 flex gap-2">@csrf
-                    <input type="text" name="reason" required placeholder="Rejection reason..." class="form-input flex-1 py-2 text-sm">
-                    <button class="btn-ghost text-sm text-red-500">✕ Reject</button>
-                </form>
+        @endif
+
+        @if(session('error'))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+                 class="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-red-500 text-white text-sm font-bold rounded-full shadow-lg flex items-center gap-2" id="flash-error">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                {{ session('error') }}
             </div>
-<<<<<<< HEAD
         @endif
 
         {{-- ══ Search & Tabs ══════════════════════════════════════ --}}
@@ -83,35 +95,77 @@
             </form>
         </div>
 
+        <!-- Bulk Action Bar -->
+        <div x-show="selectedIds.length > 0" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 -translate-y-2 scale-95"
+             class="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center justify-between shadow-sm select-none"
+             style="display: none;">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                <p class="text-sm font-bold text-red-700">
+                    <span x-text="selectedIds.length"></span> articles selected
+                </p>
+            </div>
+            <form method="POST" action="{{ route('admin.blogs.bulk-destroy') }}" data-confirm="Are you sure you want to delete the selected articles? This action is permanent and cannot be undone." id="bulk-delete-form">
+                @csrf
+                @method('DELETE')
+                <template x-for="id in selectedIds" :key="id">
+                    <input type="hidden" name="ids[]" :value="id">
+                </template>
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm hover:shadow active:scale-[0.98] transition flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Delete Selected
+                </button>
+            </form>
+        </div>
+
+        @if($blogs->count() > 0)
+        <!-- Select All Header -->
+        <div class="flex items-center gap-3 px-6 py-3 bg-gray-50/50 rounded-2xl border border-gray-100 text-xs font-bold text-gray-500 select-none">
+            <input type="checkbox" x-model="selectAll" @change="toggleSelectAll()" class="rounded border-gray-300 text-[#2D5A4C] focus:ring-[#2D5A4C]/20 w-4.5 h-4.5">
+            <span>Select All Articles on Page</span>
+        </div>
+        @endif
+
         {{-- ══ Admin Blog Posts List ══════════════════════════════ --}}
         <div class="space-y-4" id="blog-list">
             @forelse($blogs as $blog)
             <div class="card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 group hover:border-[#2D5A4C]/20" id="blog-card-{{ $blog->id }}">
-                <div class="flex-1 space-y-2">
-                    <h3 class="text-[17px] font-extrabold text-gray-900 leading-snug hover:text-primary transition-colors">
-                        <a href="{{ route('blogs.show', $blog) }}" target="_blank">{{ $blog->title }}</a>
-                    </h3>
-                    <p class="text-xs text-gray-500 leading-relaxed font-medium">
-                        {{ $blog->short_description ?? Str::limit(strip_tags($blog->content ?? ''), 120) }}
-                    </p>
-                    <div class="flex flex-wrap items-center gap-4 pt-1">
-                        {{-- Date --}}
-                        <span class="inline-flex items-center gap-1.5 text-[11px] text-gray-400 font-bold tracking-tight">
-                            {{ $blog->created_at->format('M d, Y') }}
-                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
-                            </svg>
-                        </span>
-                        {{-- Category --}}
-                        @if($blog->category)
-                        <span class="inline-flex items-center gap-1.5 text-[11px] text-gray-400 font-bold tracking-tight">
-                            {{ $blog->category }}
-                        </span>
-                        @endif
-                        {{-- Status Badge --}}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $blog->status === 'published' ? 'bg-[#e2f0ea] text-[#2D5A4C]' : 'bg-[#fff8e1] text-[#E65100]' }}">
-                            {{ ucfirst($blog->status) }}
-                        </span>
+                <div class="flex items-start gap-4 flex-1 w-full">
+                    <input type="checkbox" value="{{ $blog->id }}" x-model="selectedIds" @change="updateSelectAll()" class="blog-checkbox mt-1.5 rounded border-gray-300 text-[#2D5A4C] focus:ring-[#2D5A4C]/20 w-4.5 h-4.5 shrink-0">
+                    <div class="flex-1 space-y-2">
+                        <h3 class="text-[17px] font-extrabold text-gray-900 leading-snug hover:text-primary transition-colors">
+                            <a href="{{ route('blogs.show', $blog) }}" target="_blank">{{ $blog->title }}</a>
+                        </h3>
+                        <p class="text-xs text-gray-500 leading-relaxed font-medium">
+                            {{ $blog->short_description ?? Str::limit(strip_tags($blog->content ?? ''), 120) }}
+                        </p>
+                        <div class="flex flex-wrap items-center gap-4 pt-1">
+                            {{-- Date --}}
+                            <span class="inline-flex items-center gap-1.5 text-[11px] text-gray-400 font-bold tracking-tight">
+                                {{ $blog->created_at->format('M d, Y') }}
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                                </svg>
+                            </span>
+                            {{-- Category --}}
+                            @if($blog->category)
+                            <span class="inline-flex items-center gap-1.5 text-[11px] text-gray-400 font-bold tracking-tight">
+                                {{ $blog->category }}
+                            </span>
+                            @endif
+                            {{-- Status Badge --}}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $blog->status === 'published' ? 'bg-[#e2f0ea] text-[#2D5A4C]' : 'bg-[#fff8e1] text-[#E65100]' }}">
+                                {{ ucfirst($blog->status) }}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -121,7 +175,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                         </svg>
                     </a>
-                    <form method="POST" action="{{ route('admin.blogs.destroy', $blog) }}" onsubmit="return confirm('Are you sure you want to delete this article? This action cannot be undone.')" id="form-delete-{{ $blog->id }}">
+                    <form method="POST" action="{{ route('admin.blogs.destroy', $blog) }}" data-confirm="Are you sure you want to delete this article? This action cannot be undone." id="form-delete-{{ $blog->id }}">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors p-2.5 hover:bg-red-50/50 rounded-lg" id="btn-delete-{{ $blog->id }}" title="Delete">
@@ -338,13 +392,8 @@
                 </div>
             </form>
         </div>
-=======
-            @endif
->>>>>>> ac7a16f12a0ab597fb817dc8f456037e0ba9679f
         </div>
-        @empty
-        <div class="text-center py-12"><p class="text-content-muted">No {{ $status }} blogs.</p></div>
-        @endforelse
-        {{ $blogs->links() }}
     </div>
+    </div>
+
 </x-app-layout>
