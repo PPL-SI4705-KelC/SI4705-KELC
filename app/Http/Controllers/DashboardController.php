@@ -62,24 +62,38 @@ class DashboardController extends Controller
         $energyEmission = $user->emissions()->sum('energy_emission');
         $foodEmission = $user->emissions()->sum('consumption_emission');
 
-        // Leaderboard by XP (only users)
-        $leaderboard = \App\Models\User::where('role', 'user')->orderByDesc('xp')->limit(8)->get();
-        
-        // Ensure current user is in leaderboard or attach their rank (only counting users)
-        $userRank = \App\Models\User::where('role', 'user')->where('xp', '>', $user->xp)->count() + 1;
-        $user->rank = $userRank;
+        // Get all user IDs sorted by XP desc, id asc to determine globally unique sequential ranks
+        $sortedUserIds = \App\Models\User::where('role', 'user')
+            ->orderByDesc('xp')
+            ->orderBy('id', 'asc')
+            ->pluck('id')
+            ->toArray();
 
-        if ($user->role === 'user') {
-            if (!$leaderboard->contains('id', $user->id)) {
-                $leaderboard->push($user);
-            } else {
-                foreach($leaderboard as $idx => $u) {
-                    if($u->id === $user->id) {
-                        $u->rank = $userRank;
-                    }
-                }
-            }
+        // Assign rank to the current user
+        $user->rank = array_search($user->id, $sortedUserIds) !== false 
+            ? array_search($user->id, $sortedUserIds) + 1 
+            : 1;
+
+        // Leaderboard by XP (only users)
+        $leaderboard = \App\Models\User::where('role', 'user')
+            ->orderByDesc('xp')
+            ->orderBy('id', 'asc')
+            ->limit(8)
+            ->get();
+
+        if ($user->role === 'user' && !$leaderboard->contains('id', $user->id)) {
+            $leaderboard->push($user);
         }
+
+        // Assign rank to each player in the leaderboard
+        foreach ($leaderboard as $player) {
+            $player->rank = array_search($player->id, $sortedUserIds) !== false 
+                ? array_search($player->id, $sortedUserIds) + 1 
+                : 1;
+        }
+
+        // Sort leaderboard by rank to ensure sequential rendering order
+        $leaderboard = $leaderboard->sortBy('rank')->values();
 
         // Gamification data
         $xpToNext = $this->gamificationService->xpToNextLevel($user);
@@ -132,11 +146,30 @@ class DashboardController extends Controller
             });
         }
 
-        $users = $query->orderByDesc('xp')->paginate(20)->withQueryString();
+        $users = $query->orderByDesc('xp')
+            ->orderBy('id', 'asc')
+            ->paginate(20)
+            ->withQueryString();
 
-        // Calculate current user's rank (only counting users)
-        $userRank = \App\Models\User::where('role', 'user')->where('xp', '>', $user->xp)->count() + 1;
-        $user->rank = $userRank;
+        // Get all user IDs sorted by XP desc, id asc to determine globally unique sequential ranks
+        $sortedUserIds = \App\Models\User::where('role', 'user')
+            ->orderByDesc('xp')
+            ->orderBy('id', 'asc')
+            ->pluck('id')
+            ->toArray();
+
+        // Attach global rank to each user in the paginated collection using the sorted array index
+        $users->through(function ($player) use ($sortedUserIds) {
+            $player->rank = array_search($player->id, $sortedUserIds) !== false 
+                ? array_search($player->id, $sortedUserIds) + 1 
+                : 1;
+            return $player;
+        });
+
+        // Assign rank to the current user
+        $user->rank = array_search($user->id, $sortedUserIds) !== false 
+            ? array_search($user->id, $sortedUserIds) + 1 
+            : 1;
 
         return view('leaderboard', compact('users', 'user'));
     }
