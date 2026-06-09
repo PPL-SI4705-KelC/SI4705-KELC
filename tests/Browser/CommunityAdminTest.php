@@ -7,8 +7,14 @@ use App\Models\Community;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+
 class CommunityAdminTest extends DuskTestCase
 {
+    use DatabaseTruncation;
+
+    protected bool $seed = true;
+
     /**
      * Disable headless mode so the browser window is visible during testing.
      */
@@ -43,6 +49,9 @@ class CommunityAdminTest extends DuskTestCase
         ]);
 
         $this->browse(function (Browser $browser) use ($admin, $community) {
+            $browser->visit('/login');
+            $browser->driver->manage()->deleteAllCookies();
+            
             // 2. Login Admin menggunakan akun admin@act4climate.com
             $browser->visit('/login')
                     ->type('email', 'admin@act4climate.com')
@@ -76,16 +85,16 @@ class CommunityAdminTest extends DuskTestCase
                     // 7. Melakukan Moderation Check (Skenario B - Poin j, k)
                     ->clickLink('Preview')
                     ->pause(4000) // Jeda 4 detik memantau daftar postingan pengguna
-                    ->assertPathContains('/community/zero-waste-society')
+                    ->assertPathIs('/community/' . $community->id)
                     
                     // Kembali ke halaman list admin
                     ->visit('/admin/communities')
                     ->pause(3000)
 
                     // 8. Menghapus data komunitas (Skenario B - Poin l, m, n)
-                    ->press('form[action*="destroy"] button[type="submit"]')
-                    ->pause(2000) // Jeda 2 detik sebelum konfirmasi dialog browser muncul
-                    ->acceptDialog() // Menekan tombol "OK" pada dialog pop-up konfirmasi browser
+                    ->click("form[action*='communities/" . $community->id . "'] button")
+                    ->pause(2000) // Jeda 2 detik agar modal confirm muncul
+                    ->click('#global-confirm-btn') // Menekan tombol "Yes, delete" pada modal konfirmasi kustom
                     ->pause(4000) // Jeda 4 detik melihat hasil akhir setelah terhapus
                     ->assertDontSee('Zero Waste Society Updated');
         });
@@ -111,6 +120,8 @@ class CommunityAdminTest extends DuskTestCase
         );
 
         $this->browse(function (Browser $browser) use ($community) {
+            $browser->visit('/login');
+            $browser->driver->manage()->deleteAllCookies();
             $browser->visit('/login')
                     ->type('email', 'admin@act4climate.com')
                     ->type('password', 'password')
@@ -147,6 +158,8 @@ class CommunityAdminTest extends DuskTestCase
 
         try {
             $this->browse(function (Browser $browser) {
+                $browser->visit('/login');
+                $browser->driver->manage()->deleteAllCookies();
                 $browser->visit('/login')
                         ->type('email', 'admin@act4climate.com')
                         ->type('password', 'password')

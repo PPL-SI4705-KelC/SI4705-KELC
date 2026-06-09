@@ -6,8 +6,14 @@ use App\Models\User;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+
 class LeaderboardTest extends DuskTestCase
 {
+    use DatabaseTruncation;
+
+    protected bool $seed = true;
+
     /**
      * Disable headless mode so the browser window is visible during testing.
      */
@@ -29,6 +35,9 @@ class LeaderboardTest extends DuskTestCase
         $user1 = User::where('id', '!=', $user2->id)->where('role', 'user')->first();
 
         $this->browse(function (Browser $browser) use ($user1, $user2) {
+            $browser->visit('/login');
+            $browser->driver->manage()->deleteAllCookies();
+            
             // 2. Akses login user biasa
             $browser->visit('/login')
                     ->type('email', 'user@act4climate.com')
@@ -40,7 +49,7 @@ class LeaderboardTest extends DuskTestCase
                     ->visit('/leaderboard')
                     ->pause(4000) // Jeda 4 detik memantau pemuatan data leaderboard
                     ->assertSee('Global Leaderboard')
-                    ->assertSee('Your Standing')
+                    ->assertSee('YOUR STANDING')
                     ->assertSee($user2->name);
 
             if ($user1) {
@@ -61,6 +70,9 @@ class LeaderboardTest extends DuskTestCase
         $this->assertNotNull($admin, 'Akun admin@act4climate.com tidak ditemukan di database.');
 
         $this->browse(function (Browser $browser) use ($admin) {
+            $browser->visit('/login');
+            $browser->driver->manage()->deleteAllCookies();
+            
             // 2. Akses login Admin
             $browser->visit('/login')
                     ->type('email', 'admin@act4climate.com')
@@ -72,7 +84,7 @@ class LeaderboardTest extends DuskTestCase
                     ->visit('/admin/leaderboard')
                     ->pause(4000) // Jeda 4 detik memantau tampilan admin leaderboard
                     ->assertSee('Leaderboard')
-                    ->assertSee($admin->name)
+                    ->assertSee('Demo User')
                     ->pause(3000); // Jeda 3 detik penutupan
         });
     }

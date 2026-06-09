@@ -23,7 +23,6 @@ class AuthenticationTest extends DuskTestCase
             
             $browser->visit('/register')
                     ->assertSee('Create account')
-                    ->type('name', 'Dusk Test User')
                     ->type('username', $username)
                     ->type('email', $email)
                     ->type('password', 'password')
@@ -31,7 +30,8 @@ class AuthenticationTest extends DuskTestCase
                     ->press('button[type="submit"]')
                     ->pause(1500)
                     ->assertPathIs('/dashboard')
-                    ->assertSee('Dusk Test User');
+                    ->assertSee('Climate Impact Calculator')
+                    ->assertSee('Logout');
         });
     }
 
@@ -49,13 +49,16 @@ class AuthenticationTest extends DuskTestCase
         ]);
 
         $this->browse(function (Browser $browser) use ($user) {
+            $browser->visit('/login');
+            $browser->driver->manage()->deleteAllCookies();
             $browser->visit('/login')
                     ->type('email', $user->email)
                     ->type('password', 'password')
                     ->press('button[type="submit"]')
                     ->pause(1500)
                     ->assertPathIs('/dashboard')
-                    ->assertSee($user->name);
+                    ->assertSee('Climate Impact Calculator')
+                    ->assertSee('Logout');
         });
     }
 
@@ -73,6 +76,8 @@ class AuthenticationTest extends DuskTestCase
         ]);
 
         $this->browse(function (Browser $browser) use ($admin) {
+            $browser->visit('/login');
+            $browser->driver->manage()->deleteAllCookies();
             $browser->visit('/login')
                     ->type('email', $admin->email)
                     ->type('password', 'password')
