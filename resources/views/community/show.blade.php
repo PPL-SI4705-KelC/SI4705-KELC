@@ -30,7 +30,7 @@
         <div class="flex-1 w-full flex flex-col gap-8 pb-32">
             
             @forelse($posts as $post)
-            <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-stretch" id="post-{{ $post->id }}">
+            <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-stretch" id="post-{{ $post->id }}" x-data="{ editing: false, content: {{ Js::from($post->content) }}, originalContent: {{ Js::from($post->content) }} }">
                 <!-- Post Content (Left Side) -->
                 <div class="flex-1 flex flex-col min-w-0">
                     <!-- Author Header -->
@@ -46,15 +46,25 @@
                         </div>
                         
                         @if(!request()->has('preview') && ($post->user_id === Auth::id() || Auth::user()->isAdmin()))
-                        <form method="POST" action="{{ route('posts.destroy', $post) }}" data-confirm="Are you sure you want to delete this post?">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="w-8 h-8 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center transition" title="Delete post">
+                        <div class="flex items-center gap-1">
+                            @if($post->user_id === Auth::id())
+                            <button type="button" @click="editing = true; setTimeout(() => document.getElementById('edit-post-content-{{ $post->id }}').focus(), 50)" class="w-8 h-8 rounded-full hover:bg-gray-50 text-gray-400 hover:text-[#2D5A4C] flex items-center justify-center transition" title="Edit post" x-show="!editing">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                 </svg>
                             </button>
-                        </form>
+                            @endif
+
+                            <form method="POST" action="{{ route('posts.destroy', $post) }}" data-confirm="Are you sure you want to delete this post?" x-show="!editing">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-8 h-8 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center transition" title="Delete post">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                         @endif
                     </div>
                     
@@ -69,7 +79,24 @@
                             @endif
                         </div>
                         @endif
-                        <p class="text-[15px] text-[#334155] leading-relaxed break-words whitespace-pre-line">{{ $post->content }}</p>
+                        
+                        <div x-show="!editing">
+                            <p class="text-[15px] text-[#334155] leading-relaxed break-words whitespace-pre-line" x-text="content">{{ $post->content }}</p>
+                        </div>
+
+                        @if($post->user_id === Auth::id())
+                        <div x-show="editing" style="display: none;" class="mt-2">
+                            <form method="POST" action="{{ route('posts.update', $post) }}">
+                                @csrf
+                                @method('PUT')
+                                <textarea name="content" id="edit-post-content-{{ $post->id }}" x-model="content" required rows="3" class="w-full rounded-2xl border-gray-200 focus:border-[#2D5A4C] focus:ring-[#2D5A4C] text-[15px] p-3 shadow-sm placeholder-gray-400 font-medium" placeholder="Edit your post..."></textarea>
+                                <div class="flex items-center justify-end gap-2 mt-2">
+                                    <button type="button" @click="editing = false; content = originalContent" class="px-4 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 font-bold text-[12px] transition">Cancel</button>
+                                    <button type="submit" class="px-4 py-1.5 rounded-full bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-[12px] transition">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                        @endif
                     </div>
                     
                     <!-- Action Buttons -->
@@ -93,17 +120,7 @@
                             </button>
                         </form>
                         @endif
-                        
 
-                        <!-- Share -->
-                        <div x-data="{ copied: false }" class="relative">
-                            <button type="button" @click="navigator.clipboard.writeText('{{ route('community.show', $community) }}#post-{{ $post->id }}'); copied = true; setTimeout(() => copied = false, 2000);" class="flex items-center gap-1.5 hover:text-[#2D5A4C] transition ml-1">
-                                <svg class="w-[22px] h-[22px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                                </svg>
-                            </button>
-                            <span x-show="copied" style="display: none;" class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2.5 py-1 text-[10px] font-bold text-white bg-slate-900 rounded-md shadow-sm whitespace-nowrap z-30 transition-all duration-300">Link copied!</span>
-                        </div>
                     </div>
                 </div>
                 
@@ -810,6 +827,12 @@
 
             // Reply inputs: hashtag + mention
             document.querySelectorAll('[id^="reply-text-"]').forEach(el => {
+                new HashtagAC(el);
+                new MentionAC(el);
+            });
+
+            // Edit post textareas: hashtag + mention
+            document.querySelectorAll('[id^="edit-post-content-"]').forEach(el => {
                 new HashtagAC(el);
                 new MentionAC(el);
             });
