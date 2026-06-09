@@ -9,7 +9,6 @@ use App\Models\Emission;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use App\Models\User;
-use App\Services\GamificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,7 +32,7 @@ class AdminDashboardController extends Controller
         ];
 
         // Recent users
-        $recentUsers = User::latest()->limit(5)->get();
+        $recentUsers = User::latest()->limit(4)->get();
 
         // Weekly emission trend
         $weeklyEmissions = Emission::selectRaw('DATE(emission_date) as date, AVG(total_emission) as avg_emission')
@@ -46,65 +45,21 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Manage blogs (approve/reject).
-     */
-    public function blogs(Request $request)
-    {
-        $status = $request->get('status', 'pending');
-        $blogs = Blog::where('status', $status)
-            ->with('user:id,name,username')
-            ->latest()
-            ->paginate(15);
-
-        return view('admin.blogs', compact('blogs', 'status'));
-    }
-
-    /**
-     * Approve a blog.
-     */
-    public function approveBlog(Blog $blog)
-    {
-        $blog->update([
-            'status' => 'approved',
-            'reviewed_by' => Auth::id(),
-            'reviewed_at' => now(),
-            'published_at' => now(),
-        ]);
-
-        // Award XP to author
-        $author = $blog->user;
-        $isFirst = $author->blogs()->approved()->count() <= 1;
-        $xpAmount = $isFirst ? 1000 : 500;
-
-        $gamification = new GamificationService();
-        $gamification->awardXp($author, $xpAmount, 'blog', $isFirst ? 'First blog published' : 'Blog published');
-
-        return back()->with('success', 'Blog approved! Author awarded ' . $xpAmount . ' XP.');
-    }
-
-    /**
-     * Reject a blog.
-     */
-    public function rejectBlog(Request $request, Blog $blog)
-    {
-        $request->validate(['reason' => 'required|string|max:500']);
-
-        $blog->update([
-            'status' => 'rejected',
-            'rejection_reason' => $request->reason,
-            'reviewed_by' => Auth::id(),
-            'reviewed_at' => now(),
-        ]);
-
-        return back()->with('success', 'Blog rejected.');
-    }
-
-    /**
      * Manage quizzes.
      */
-    public function quizzes()
+    public function quizzes(Request $request)
     {
-        $quizzes = Quiz::latest()->paginate(20);
+        $query = Quiz::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('question', 'like', "%{$search}%")
+                  ->orWhere('category', 'like', "%{$search}%");
+            });
+        }
+
+        $quizzes = $query->latest()->paginate(20)->withQueryString();
         return view('admin.quizzes', compact('quizzes'));
     }
 
@@ -128,12 +83,67 @@ class AdminDashboardController extends Controller
     }
 
     /**
+     * Edit quiz question form.
+     */
+    public function editQuiz(Quiz $quiz)
+    {
+        return view('admin.quizzes.edit', compact('quiz'));
+    }
+
+    /**
+     * Update quiz question.
+     */
+    public function updateQuiz(Request $request, Quiz $quiz)
+    {
+        $request->validate([
+            'question' => 'required|string|min:10',
+            'options' => 'required|array|size:4',
+            'options.*' => 'required|string',
+            'correct_answer' => 'required|integer|min:0|max:3',
+            'category' => 'required|string',
+            'difficulty' => 'required|in:easy,medium,hard',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $quiz->update($request->only('question', 'options', 'correct_answer', 'category', 'difficulty', 'is_active'));
+
+        return redirect()->route('admin.quizzes')->with('success', 'Quiz question updated!');
+    }
+
+    /**
      * Delete quiz question.
      */
     public function destroyQuiz(Quiz $quiz)
     {
         $quiz->delete();
         return back()->with('success', 'Quiz question deleted.');
+    }
+
+    /**
+     * Delete multiple quizzes.
+     */
+    public function bulkDestroyQuizzes(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No quiz questions selected for deletion.');
+        }
+
+        try {
+            $quizzes = Quiz::whereIn('id', $ids)->get();
+            $deletedCount = 0;
+            foreach ($quizzes as $quiz) {
+                $quiz->delete();
+                $deletedCount++;
+            }
+
+            return redirect()
+                ->route('admin.quizzes')
+                ->with('success', "{$deletedCount} quiz questions deleted successfully.");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('AdminDashboardController@bulkDestroyQuizzes failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete selected quiz questions.');
+        }
     }
 
     /**
@@ -152,7 +162,7 @@ class AdminDashboardController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(20);
+        $users = $query->latest()->paginate(20)->withQueryString();
         return view('admin.users', compact('users'));
     }
 
@@ -170,7 +180,6 @@ class AdminDashboardController extends Controller
     public function storeUser(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
@@ -181,7 +190,7 @@ class AdminDashboardController extends Controller
         ]);
 
         User::create([
-            'name' => $request->name,
+            'name' => $request->username,
             'username' => $request->username,
             'email' => $request->email,
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
@@ -209,7 +218,6 @@ class AdminDashboardController extends Controller
     public function updateUser(Request $request, User $user)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'password' => ['nullable', 'string', 'min:8'],
@@ -220,7 +228,7 @@ class AdminDashboardController extends Controller
         ]);
 
         $data = [
-            'name' => $request->name,
+            'name' => $request->username,
             'username' => $request->username,
             'email' => $request->email,
             'role' => $request->role,
@@ -250,6 +258,45 @@ class AdminDashboardController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users')->with('success', 'User deleted successfully.');
+    }
+
+    /**
+     * Delete multiple users.
+     */
+    public function bulkDestroyUsers(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No users selected for deletion.');
+        }
+
+        // Exclude the current logged in user
+        $ids = array_filter($ids, function($id) {
+            return $id != Auth::id();
+        });
+
+        if (empty($ids)) {
+            return back()->with('error', 'No valid users selected for deletion.');
+        }
+
+        try {
+            $users = User::whereIn('id', $ids)->get();
+            $deletedCount = 0;
+            foreach ($users as $user) {
+                if ($user->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->avatar)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+                }
+                $user->delete();
+                $deletedCount++;
+            }
+
+            return redirect()
+                ->route('admin.users')
+                ->with('success', "{$deletedCount} users deleted successfully.");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('AdminDashboardController@bulkDestroyUsers failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete selected users.');
+        }
     }
 
     /**
@@ -340,9 +387,6 @@ class AdminDashboardController extends Controller
         }
 
         $community = Community::create($data);
-        
-        $community->members()->attach(Auth::id(), ['role' => 'admin']);
-        $community->increment('member_count');
 
         return redirect()->route('admin.communities')->with('success', 'Community created successfully!');
     }
