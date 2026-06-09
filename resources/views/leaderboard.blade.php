@@ -43,7 +43,7 @@
                         @forelse($users as $index => $player)
                         @php
                             // Calculate absolute rank based on pagination
-                            $rank = $users->firstItem() + $index;
+                            $rank = $player->rank ?? ($users->firstItem() + $index);
                             $isCurrentUser = $player->id === Auth::id();
                             
                             $bgClass = 'hover:bg-gray-50/50 transition-colors';

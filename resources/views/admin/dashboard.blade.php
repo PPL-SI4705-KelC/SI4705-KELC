@@ -344,8 +344,7 @@
                             <p class="text-[11px] text-content-muted mt-0.5 truncate">{{ $u->email }}</p>
                         </div>
                     </div>
-                    <span class="shrink-0 ml-2 inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider
-                        {{ $u->role === 'admin' ? 'bg-primary-50 text-primary-700 border border-primary-200' : 'bg-secondary-50 text-secondary-700 border border-secondary-200' }}">
+                    <span class="shrink-0 ml-2 inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-secondary-50 text-secondary-700 border border-secondary-200">
                         {{ $u->role }}
                     </span>
                 </div>

@@ -31,8 +31,8 @@ class AdminDashboardController extends Controller
             'total_communities' => Community::count(),
         ];
 
-        // Recent users
-        $recentUsers = User::latest()->limit(4)->get();
+        // Recent users (only role = 'user')
+        $recentUsers = User::where('role', 'user')->latest()->limit(4)->get();
 
         // Weekly emission trend
         $weeklyEmissions = Emission::selectRaw('DATE(emission_date) as date, AVG(total_emission) as avg_emission')
@@ -304,10 +304,23 @@ class AdminDashboardController extends Controller
      */
     public function leaderboard()
     {
+        $sortedUserIds = User::where('role', 'user')
+            ->orderByDesc('xp')
+            ->orderBy('id', 'asc')
+            ->pluck('id')
+            ->toArray();
+
         $leaderboard = User::where('role', 'user')
-            ->orderBy('xp', 'desc')
+            ->orderByDesc('xp')
+            ->orderBy('id', 'asc')
             ->limit(50)
             ->get();
+
+        foreach ($leaderboard as $player) {
+            $player->rank = array_search($player->id, $sortedUserIds) !== false 
+                ? array_search($player->id, $sortedUserIds) + 1 
+                : 1;
+        }
 
         return view('admin.leaderboard', compact('leaderboard'));
     }
