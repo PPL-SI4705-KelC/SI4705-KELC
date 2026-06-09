@@ -153,6 +153,26 @@ class CommunityController extends Controller
     }
 
     /**
+     * Update a post's content (caption).
+     */
+    public function updatePost(Request $request, Post $post)
+    {
+        if ($post->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'content' => ['required', 'string', 'min:1', 'max:2000'],
+        ]);
+
+        $post->update([
+            'content' => $request->content,
+        ]);
+
+        return back()->with('success', 'Post updated!');
+    }
+
+    /**
      * Like/unlike a post.
      */
     public function toggleLike(Post $post)
