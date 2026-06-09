@@ -11,13 +11,7 @@
                 <span class="w-8 text-center text-lg font-bold {{ $i === 0 ? 'text-accent-600' : ($i < 3 ? 'text-accent-500' : 'text-content-muted') }}">
                     {{ $i < 3 ? ['🥇','🥈','🥉'][$i] : $i + 1 }}
                 </span>
-                <div class="avatar-primary text-xs overflow-hidden select-none shrink-0 flex items-center justify-center">
-                    @if($u->avatar)
-                        <img src="{{ asset('storage/' . $u->avatar) }}" alt="{{ $u->name }}'s Avatar" class="w-full h-full object-cover">
-                    @else
-                        {{ strtoupper(substr($u->name, 0, 2)) }}
-                    @endif
-                </div>
+                <div class="avatar-primary text-xs">{{ substr($u->name, 0, 2) }}</div>
                 <div class="flex-1">
                     <p class="text-sm font-semibold text-content">{{ $u->name }}</p>
                     <p class="text-xs text-content-muted">{{ $u->journey_title }}</p>

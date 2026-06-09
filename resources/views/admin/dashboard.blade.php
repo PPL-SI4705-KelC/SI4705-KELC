@@ -181,7 +181,7 @@
     </div>
 
     {{-- Primary Stats Cards Grid --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
         {{-- Total Users --}}
         <div class="stat-card-premium group stagger-2">
             <div class="stat-glow bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600" style="animation: pulseGlow 3s ease-in-out infinite;"></div>
@@ -199,42 +199,40 @@
             </div>
         </div>
 
-        {{-- Total Blogs --}}
+        {{-- Activities --}}
         <div class="stat-card-premium group stagger-3">
-            <div class="stat-glow bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600" style="animation: pulseGlow 3s ease-in-out infinite 0.5s;"></div>
-            <div class="stat-bg-pattern bg-emerald-500"></div>
+            <div class="stat-glow bg-gradient-to-r from-secondary-400 via-secondary-500 to-secondary-600" style="animation: pulseGlow 3s ease-in-out infinite 0.5s;"></div>
+            <div class="stat-bg-pattern bg-secondary-500"></div>
             <div class="relative z-10 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                    <svg class="w-6 h-6 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                    <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-2xl font-extrabold text-content leading-none tracking-tight">{{ number_format($stats['total_blogs']) }}</p>
-                    <p class="text-xs font-medium text-content-muted mt-1.5 uppercase tracking-wider">Total Blogs</p>
+                    <p class="text-2xl font-extrabold text-content leading-none tracking-tight">{{ number_format($stats['total_activities']) }}</p>
+                    <p class="text-xs font-medium text-content-muted mt-1.5 uppercase tracking-wider">Activities</p>
                 </div>
             </div>
         </div>
 
-        {{-- Communities --}}
+        {{-- Total CO2 --}}
         <div class="stat-card-premium group stagger-4">
-            <div class="stat-glow bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600" style="animation: pulseGlow 3s ease-in-out infinite 1s;"></div>
-            <div class="stat-bg-pattern bg-blue-500"></div>
+            <div class="stat-glow bg-gradient-to-r from-accent-400 via-accent-500 to-accent-600" style="animation: pulseGlow 3s ease-in-out infinite 1s;"></div>
+            <div class="stat-bg-pattern bg-accent-500"></div>
             <div class="relative z-10 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                    <svg class="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-50 to-accent-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                    <span class="text-xs font-black text-accent-700 uppercase tracking-tighter select-none">co₂</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-2xl font-extrabold text-content leading-none tracking-tight">{{ number_format($stats['total_communities']) }}</p>
-                    <p class="text-xs font-medium text-content-muted mt-1.5 uppercase tracking-wider">Communities</p>
+                    <p class="text-2xl font-extrabold text-content leading-none tracking-tight">{{ number_format($stats['total_emissions']) }}</p>
+                    <p class="text-xs font-medium text-content-muted mt-1.5 uppercase tracking-wider">Total CO₂ (kg)</p>
                 </div>
             </div>
         </div>
 
         {{-- Pending Blogs --}}
-        <div class="stat-card-premium group stagger-5">
+        <div class="stat-card-premium group stagger-4">
             <div class="stat-glow bg-gradient-to-r from-red-400 via-red-500 to-red-600" style="animation: pulseGlow 3s ease-in-out infinite 1.5s;"></div>
             <div class="stat-bg-pattern bg-red-500"></div>
             <div class="relative z-10 flex items-center gap-4">
@@ -247,6 +245,40 @@
                     <p class="text-2xl font-extrabold text-content leading-none tracking-tight">{{ $stats['pending_blogs'] }}</p>
                     <p class="text-xs font-medium text-content-muted mt-1.5 uppercase tracking-wider">Pending Blogs</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Secondary Mini Stats Row --}}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 stagger-5">
+        <div class="mini-stat" style="--stripe-color: #2D5A4C;">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#2D5A4C;border-radius:16px 0 0 16px;"></div>
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <p class="text-lg font-extrabold text-content leading-none">{{ number_format($stats['total_blogs']) }}</p>
+                <p class="text-[11px] text-content-muted mt-0.5 font-medium uppercase tracking-wider">Total Blogs</p>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#4CAF50;border-radius:16px 0 0 16px;"></div>
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary-50 to-secondary-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div>
+                <p class="text-lg font-extrabold text-content leading-none">{{ number_format($stats['total_communities']) }}</p>
+                <p class="text-[11px] text-content-muted mt-0.5 font-medium uppercase tracking-wider">Communities</p>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#FBC02D;border-radius:16px 0 0 16px;"></div>
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-50 to-accent-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </div>
+            <div>
+                <p class="text-lg font-extrabold text-content leading-none">{{ number_format($stats['avg_emission'], 1) }}</p>
+                <p class="text-[11px] text-content-muted mt-0.5 font-medium uppercase tracking-wider">Avg CO₂/User (kg)</p>
             </div>
         </div>
     </div>
@@ -287,9 +319,7 @@
                 {{-- Manage Communities --}}
                 <a href="{{ route('admin.communities') }}" class="action-tile bg-gradient-to-br from-white to-accent-50/40 border-gray-100 hover:border-accent-200" style="border-color: #f3f4f6;">
                     <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-100 to-accent-200/60 flex items-center justify-center shadow-sm">
-                        <svg class="w-6 h-6 text-[#2D5A4C]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-                        </svg>
+                        <span class="text-xl">👥</span>
                     </div>
                     <p class="text-xs font-bold text-content leading-tight">Communities</p>
                 </a>
@@ -310,6 +340,14 @@
                     <p class="text-xs font-bold text-content leading-tight">Leaderboard</p>
                 </a>
 
+                {{-- Quizzes Taken (info tile) --}}
+                <div class="action-tile" style="background: linear-gradient(135deg, #E8F0ED 0%, #D1E1DB 100%); border-color: #A3C3B7;">
+                    <div class="w-12 h-12 rounded-xl bg-white/80 flex items-center justify-center shadow-sm">
+                        <span class="text-xl">📊</span>
+                    </div>
+                    <p class="text-xs font-bold text-content leading-tight">Quizzes Taken</p>
+                    <p class="text-xl font-extrabold text-primary leading-none tracking-tight">{{ number_format($stats['total_quizzes_taken']) }}</p>
+                </div>
             </div>
         </div>
 
@@ -331,13 +369,9 @@
                 @foreach($recentUsers as $idx => $u)
                 <div class="user-row flex items-center justify-between p-3">
                     <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shrink-0 select-none shadow-sm
-                            {{ !$u->avatar ? ($idx % 3 === 0 ? 'bg-gradient-to-br from-primary-100 to-primary-200 text-primary-700' : ($idx % 3 === 1 ? 'bg-gradient-to-br from-secondary-100 to-secondary-200 text-secondary-700' : 'bg-gradient-to-br from-accent-100 to-accent-200 text-accent-700')) : '' }}">
-                            @if($u->avatar)
-                                <img src="{{ asset('storage/' . $u->avatar) }}" alt="{{ $u->name }}'s Avatar" class="w-full h-full object-cover">
-                            @else
-                                <span class="text-xs font-bold">{{ strtoupper(substr($u->name, 0, 2)) }}</span>
-                            @endif
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 select-none shadow-sm
+                            {{ $idx % 3 === 0 ? 'bg-gradient-to-br from-primary-100 to-primary-200 text-primary-700' : ($idx % 3 === 1 ? 'bg-gradient-to-br from-secondary-100 to-secondary-200 text-secondary-700' : 'bg-gradient-to-br from-accent-100 to-accent-200 text-accent-700') }}">
+                            {{ strtoupper(substr($u->name, 0, 2)) }}
                         </div>
                         <div class="overflow-hidden min-w-0">
                             <p class="text-sm font-bold text-content truncate leading-tight">{{ $u->name }}</p>

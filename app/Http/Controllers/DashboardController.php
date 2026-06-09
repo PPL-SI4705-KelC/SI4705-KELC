@@ -62,21 +62,19 @@ class DashboardController extends Controller
         $energyEmission = $user->emissions()->sum('energy_emission');
         $foodEmission = $user->emissions()->sum('consumption_emission');
 
-        // Leaderboard by XP (only users)
-        $leaderboard = \App\Models\User::where('role', 'user')->orderByDesc('xp')->limit(8)->get();
+        // Leaderboard by XP
+        $leaderboard = \App\Models\User::orderByDesc('xp')->limit(8)->get();
         
-        // Ensure current user is in leaderboard or attach their rank (only counting users)
-        $userRank = \App\Models\User::where('role', 'user')->where('xp', '>', $user->xp)->count() + 1;
+        // Ensure current user is in leaderboard or attach their rank
+        $userRank = \App\Models\User::where('xp', '>', $user->xp)->count() + 1;
         $user->rank = $userRank;
 
-        if ($user->role === 'user') {
-            if (!$leaderboard->contains('id', $user->id)) {
-                $leaderboard->push($user);
-            } else {
-                foreach($leaderboard as $idx => $u) {
-                    if($u->id === $user->id) {
-                        $u->rank = $userRank;
-                    }
+        if (!$leaderboard->contains('id', $user->id)) {
+            $leaderboard->push($user);
+        } else {
+            foreach($leaderboard as $idx => $u) {
+                if($u->id === $user->id) {
+                    $u->rank = $userRank;
                 }
             }
         }
@@ -134,8 +132,8 @@ class DashboardController extends Controller
 
         $users = $query->orderByDesc('xp')->paginate(20)->withQueryString();
 
-        // Calculate current user's rank (only counting users)
-        $userRank = \App\Models\User::where('role', 'user')->where('xp', '>', $user->xp)->count() + 1;
+        // Calculate current user's rank
+        $userRank = \App\Models\User::where('xp', '>', $user->xp)->count() + 1;
         $user->rank = $userRank;
 
         return view('leaderboard', compact('users', 'user'));
