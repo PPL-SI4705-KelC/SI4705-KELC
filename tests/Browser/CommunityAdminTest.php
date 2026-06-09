@@ -4,6 +4,7 @@ namespace Tests\Browser;
 
 use App\Models\User;
 use App\Models\Community;
+use App\Models\Post;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
@@ -48,7 +49,14 @@ class CommunityAdminTest extends DuskTestCase
             'is_active' => true,
         ]);
 
-        $this->browse(function (Browser $browser) use ($admin, $community) {
+        // Buat postingan uji coba untuk memoderasi/memantau kiriman pengguna (TC-05)
+        $post = Post::create([
+            'user_id' => $admin->id,
+            'community_id' => $community->id,
+            'content' => 'Daily user post about recycling plastic bottles.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($admin, $community, $post) {
             $browser->visit('/login');
             $browser->driver->manage()->deleteAllCookies();
             
@@ -57,18 +65,24 @@ class CommunityAdminTest extends DuskTestCase
                     ->type('email', 'admin@act4climate.com')
                     ->type('password', 'password') // password default dari seeder
                     ->press('button[type="submit"]')
-                    ->pause(3000) // Jeda 3 detik melihat proses login
+                    ->pause(10000)
 
-                    // 3. Memantau daftar komunitas (Skenario A - Poin a, b)
+                    // 3. Memantau daftar komunitas (Skenario A - Poin a, b / TC-01)
                     ->visit('/admin/communities')
-                    ->pause(4000) // Jeda 4 detik memantau tabel data list
+                    ->pause(10000) 
                     ->assertSee('Community Management')
+                    ->assertSee('TOTAL COMMUNITIES')
+                    ->assertSee('ACTIVE MEMBERS')
                     ->assertSee($community->name)
 
-                    // 4. Memilih komunitas dan menekan "Edit Details" (Skenario A - Poin c, d)
+                    // 4. Memilih komunitas dan menekan "Edit Details" (Skenario A - Poin c, d / TC-02)
                     ->clickLink('Edit Details')
-                    ->pause(3000) // Jeda 3 detik memantau form edit termuat
+                    ->pause(10000) 
                     ->assertSee('Edit Community')
+                    ->assertVisible('#name')
+                    ->assertVisible('#description')
+                    ->assertVisible('#is_active')
+                    ->assertVisible('#upload-zone')
                     ->assertValue('#name', $community->name)
                     
                     // 5. Menyunting informasi komunitas (Skenario A - Poin e)
@@ -76,24 +90,39 @@ class CommunityAdminTest extends DuskTestCase
                     ->type('description', 'Updated description for climate actions.')
                     ->pause(3000) // Jeda 3 detik melihat data yang terketik
 
-                    // 6. Menyimpan perubahan (Skenario A - Poin f, g, h)
+                    // 6. Menyimpan perubahan (Skenario A - Poin f, g, h / TC-03)
                     ->press('Save Changes')
                     ->pause(4000) // Jeda 4 detik melihat redirect sukses
                     ->assertPathIs('/admin/communities')
+                    ->assertSee('Community updated successfully!')
                     ->assertSee('Zero Waste Society Updated')
 
-                    // 7. Melakukan Moderation Check (Skenario B - Poin j, k)
+                    // 7. Melakukan Moderation Check / Preview (Skenario B - Poin j, k / TC-05)
                     ->clickLink('Preview')
                     ->pause(4000) // Jeda 4 detik memantau daftar postingan pengguna
                     ->assertPathIs('/community/' . $community->id)
+                    ->assertSee('Daily user post about recycling plastic bottles.')
+                    ->assertSee('Join Community')
+                    ->assertSee('Join the community to comment.')
+                    ->assertDontSee('Posting')
                     
                     // Kembali ke halaman list admin
                     ->visit('/admin/communities')
                     ->pause(3000)
 
-                    // 8. Menghapus data komunitas (Skenario B - Poin l, m, n)
+                    // 8. Menghapus data komunitas (Skenario B - Poin l, m, n / TC-06)
                     ->click("form[action*='communities/" . $community->id . "'] button")
                     ->pause(2000) // Jeda 2 detik agar modal confirm muncul
+                    ->assertVisible('#global-confirm-modal')
+                    
+                    // TC-06: Exception Batal / Cancel
+                    ->click('#global-confirm-cancel')
+                    ->pause(2000)
+                    ->assertSee('Zero Waste Society Updated') // Masih ada di list
+
+                    // Klik hapus lagi untuk melakukan konfirmasi Ya/OK
+                    ->click("form[action*='communities/" . $community->id . "'] button")
+                    ->pause(2000)
                     ->click('#global-confirm-btn') // Menekan tombol "Yes, delete" pada modal konfirmasi kustom
                     ->pause(4000) // Jeda 4 detik melihat hasil akhir setelah terhapus
                     ->assertDontSee('Zero Waste Society Updated');
@@ -101,7 +130,7 @@ class CommunityAdminTest extends DuskTestCase
     }
 
     /**
-     * Skenario Batas: Menyimpan input wajib yang tidak valid (kosong).
+     * Skenario Batas: Menyimpan input wajib yang tidak valid (kosong / kurang dari 3 karakter) (TC-04).
      */
     public function test_admin_cannot_save_invalid_data(): void
     {
@@ -132,18 +161,26 @@ class CommunityAdminTest extends DuskTestCase
                     ->visit("/admin/communities/{$community->id}/edit")
                     ->pause(3000)
 
-                    // Mengosongkan field name (wajib)
-                    ->clear('name')
-                    ->pause(3000) // Jeda 3 detik melihat input kosong
-
-                    // Mencoba menyimpan perubahan kosong
+                    // TC-04: Kurang dari 3 karakter (e.g. 'Ab')
+                    ->type('name', 'Ab')
                     ->press('Save Changes')
-                    ->pause(3000); // Jeda 3 detik melihat browser validation error
+                    ->pause(3000)
+                    ->assertPathIs("/admin/communities/{$community->id}/edit")
+                    ->assertSee('The name field must be at least 3 characters.')
+
+                    // TC-04: Mengosongkan field name dengan menghapus attribute required via JS agar bisa disubmit ke Laravel
+                    ->script("document.getElementById('name').removeAttribute('required');");
+            
+            $browser->clear('name')
+                    ->press('Save Changes')
+                    ->pause(3000)
+                    ->assertPathIs("/admin/communities/{$community->id}/edit")
+                    ->assertSee('The name field is required.');
         });
     }
 
     /**
-     * Skenario Batas: Halaman kosong ketika tidak ada komunitas.
+     * Skenario Batas: Halaman kosong ketika tidak ada komunitas (TC-07).
      */
     public function test_empty_state_shows_correct_placeholder(): void
     {
