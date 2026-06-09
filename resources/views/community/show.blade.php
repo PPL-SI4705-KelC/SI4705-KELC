@@ -1,12 +1,24 @@
 <x-app-layout>
     <x-slot name="title">{{ $community->name }}</x-slot>
     <x-slot name="header">
-        <div>
-            <h1 class="text-xl font-bold text-content">{{ $community->name }}</h1>
-            <p class="text-sm text-content-muted">{{ $community->member_count }} members</p>
+        <div class="flex items-center gap-3">
+            {{-- Back Button --}}
+            <button onclick="history.back()"
+                class="w-9 h-9 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-[#2D5A4C] hover:bg-[#2D5A4C]/5 hover:border-[#2D5A4C]/30 transition shrink-0"
+                title="Back">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <div>
+                <h1 class="text-xl font-bold text-content">{{ $community->name }}</h1>
+                <p class="text-sm text-content-muted">{{ $community->members_count ?? $community->member_count }} members</p>
+            </div>
         </div>
         @if(!$isMember)
         <form method="POST" action="{{ route('community.join', $community) }}">@csrf <button class="btn-primary text-sm">Join Community</button></form>
+        @else
+        <form method="POST" action="{{ route('community.leave', $community) }}">@csrf <button class="btn-ghost text-red-500 text-sm border border-red-200 rounded-full px-4 py-1.5 hover:bg-red-50">Leave Community</button></form>
         @endif
     </x-slot>
     
@@ -16,7 +28,7 @@
         <div class="flex-1 w-full flex flex-col gap-8 pb-32">
             
             @forelse($posts as $post)
-            <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-stretch" id="post-{{ $post->id }}">
+            <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-stretch" id="post-{{ $post->id }}" x-data="{ editing: false, content: {{ Js::from($post->content) }}, originalContent: {{ Js::from($post->content) }} }">
                 <!-- Post Content (Left Side) -->
                 <div class="flex-1 flex flex-col min-w-0">
                     <!-- Author Header -->
@@ -28,6 +40,28 @@
                             <p class="font-bold text-[#1E293B] text-[15px] leading-tight">{{ '@'.$post->user->username }}</p>
                             <p class="text-[11px] font-medium text-gray-400">{{ $post->created_at->diffForHumans() }}</p>
                         </div>
+                        
+                        @if(!request()->has('preview') && ($post->user_id === Auth::id() || Auth::user()->isAdmin()))
+                        <div class="flex items-center gap-1">
+                            @if($post->user_id === Auth::id())
+                            <button type="button" @click="editing = true; setTimeout(() => document.getElementById('edit-post-content-{{ $post->id }}').focus(), 50)" class="w-8 h-8 rounded-full hover:bg-gray-50 text-gray-400 hover:text-[#2D5A4C] flex items-center justify-center transition" title="Edit post" x-show="!editing">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                            </button>
+                            @endif
+
+                            <form method="POST" action="{{ route('posts.destroy', $post) }}" data-confirm="Are you sure you want to delete this post?" x-show="!editing">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-8 h-8 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center transition" title="Delete post">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                        @endif
                     </div>
                     
                     <!-- Post Body -->
@@ -37,7 +71,24 @@
                             <img src="{{ asset('storage/' . $post->image) }}" alt="Post image" class="max-w-full h-auto max-h-[500px] object-contain">
                         </div>
                         @endif
-                        <p class="text-[15px] text-[#334155] leading-relaxed break-words whitespace-pre-line">{{ $post->content }}</p>
+                        
+                        <div x-show="!editing">
+                            <p class="text-[15px] text-[#334155] leading-relaxed break-words whitespace-pre-line" x-text="content">{{ $post->content }}</p>
+                        </div>
+
+                        @if($post->user_id === Auth::id())
+                        <div x-show="editing" style="display: none;" class="mt-2">
+                            <form method="POST" action="{{ route('posts.update', $post) }}">
+                                @csrf
+                                @method('PUT')
+                                <textarea name="content" id="edit-post-content-{{ $post->id }}" x-model="content" required rows="3" class="w-full rounded-2xl border-gray-200 focus:border-[#2D5A4C] focus:ring-[#2D5A4C] text-[15px] p-3 shadow-sm placeholder-gray-400 font-medium" placeholder="Edit your post..."></textarea>
+                                <div class="flex items-center justify-end gap-2 mt-2">
+                                    <button type="button" @click="editing = false; content = originalContent" class="px-4 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 font-bold text-[12px] transition">Cancel</button>
+                                    <button type="submit" class="px-4 py-1.5 rounded-full bg-[#2D5A4C] hover:bg-[#1e4237] text-white font-bold text-[12px] transition">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                        @endif
                     </div>
                     
                     <!-- Action Buttons -->
@@ -52,18 +103,8 @@
                                 <span class="text-sm font-bold">{{ $post->likes_count > 0 ? $post->likes_count : '' }}</span>
                             </button>
                         </form>
-                        
 
-    <div class="max-w-2xl space-y-6 animate-fade-in">
-        @if($isMember)
-        {{-- Create Post --}}
-        <div class="card">
-            <form method="POST" action="{{ route('community.posts.store', $community) }}" enctype="multipart/form-data">
-                @csrf
-                <textarea name="content" rows="3" required class="form-input mb-3" placeholder="Share something with the community..."></textarea>
-                <div class="flex justify-between items-center">
-                    <input type="file" name="image" accept="image/*" class="text-sm text-content-muted">
-                    <button type="submit" class="btn-primary text-sm">Post</button>
+                    </div>
                 </div>
                 
                 <!-- Comments Section (Right Side) -->
@@ -169,63 +210,110 @@
                         @endforelse
                     </div>
 
-        {{-- Posts Feed --}}
-        @forelse($posts as $post)
-        <div class="card">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="avatar-primary text-xs">{{ substr($post->user->name, 0, 2) }}</div>
-                <div>
-                    <p class="text-sm font-semibold text-content">{{ $post->user->name }}</p>
-                    <p class="text-xs text-content-muted">{{ $post->created_at->diffForHumans() }} · Lv.{{ $post->user->level }}</p>
+                    <!-- Comment Input -->
+                    @if($isMember)
+                    <div class="border-t border-gray-200 p-3 bg-white">
+                        <form method="POST" action="{{ route('posts.comments.store', $post) }}">
+                            @csrf
+                            <div class="flex items-center gap-2 bg-gray-50 rounded-2xl px-3 py-1.5 focus-within:bg-white focus-within:shadow-sm transition-all">
+                                <input type="text" name="content"
+                                    id="comment-input-{{ $post->id }}"
+                                    required
+                                    placeholder="Comment here..."
+                                    class="flex-1 bg-transparent border-0 text-[12px] focus:ring-0 py-0.5 placeholder-gray-400 min-w-0"
+                                    autocomplete="off">
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button type="button"
+                                        onclick="insertMentionInComment({{ $post->id }})"
+                                        class="w-6 h-6 rounded-full hover:bg-[#2D5A4C]/10 flex items-center justify-center text-[#2D5A4C] font-bold text-[12px] leading-none select-none transition"
+                                        title="Mention someone">@</button>
+                                    <button type="submit" class="text-[#2D5A4C] hover:text-[#1e4237] transition">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    @else
+                    <div class="border-t border-gray-200 p-4 text-center bg-gray-50">
+                        <p class="text-xs text-gray-500">Join the community to comment.</p>
+                    </div>
+                    @endif
                 </div>
             </div>
-            <p class="text-content-body text-sm whitespace-pre-line">{{ $post->content }}</p>
-            @if($post->image)
-            <img src="{{ asset('storage/' . $post->image) }}" alt="" class="w-full rounded-xl mt-3 max-h-80 object-cover">
-            @endif
-
-            {{-- Actions --}}
-            <div class="flex items-center gap-4 mt-4 pt-3 border-t border-surface-border">
-                <form method="POST" action="{{ route('posts.like', $post) }}">@csrf
-                    <button class="flex items-center gap-1.5 text-sm {{ in_array($post->id, $likedPostIds) ? 'text-red-500' : 'text-content-muted hover:text-red-500' }} transition-colors">
-                        <svg class="w-4 h-4" fill="{{ in_array($post->id, $likedPostIds) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                        {{ $post->likes_count }}
-                    </button>
-                </form>
-                <span class="flex items-center gap-1.5 text-sm text-content-muted">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                    {{ $post->comments_count }}
-                </span>
-                <form method="POST" action="{{ route('posts.save', $post) }}">@csrf
-                    <button class="flex items-center gap-1.5 text-sm {{ in_array($post->id, $savedPostIds) ? 'text-accent-700' : 'text-content-muted hover:text-accent-700' }} transition-colors">
-                        <svg class="w-4 h-4" fill="{{ in_array($post->id, $savedPostIds) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-                        Save
-                    </button>
-                </form>
+            @empty
+            <div class="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center">
+                <span class="text-5xl mb-4">🌱</span>
+                <p class="text-gray-500 font-medium">No posts in this community yet.</p>
+                @if($isMember)
+                <p class="text-gray-400 text-sm mt-1">Be the first to start the discussion!</p>
+                @endif
             </div>
+            @endforelse
+            
+            <div class="mt-2">{{ $posts->links() }}</div>
 
-            {{-- Comments --}}
-            @if($post->comments->count() > 0)
-            <div class="mt-3 space-y-2">
-                @foreach($post->comments->take(3) as $comment)
-                <div class="flex gap-2 pl-2 border-l-2 border-surface-border">
-                    <div class="flex-1">
-                        <p class="text-xs"><span class="font-semibold text-content">{{ $comment->user->name }}</span> <span class="text-content-muted">· {{ $comment->created_at->diffForHumans() }}</span></p>
-                        <p class="text-sm text-content-body">{{ $comment->content }}</p>
+        </div>
+        
+        <!-- Right Sidebar (Fixed on Desktop) -->
+        <div class="hidden lg:block w-[280px] shrink-0 sticky top-32">
+            <script>
+                window.communitySidebarData = {
+                    online: {!! json_encode($onlineMembers->map(fn($u) => ['username' => $u->username, 'name' => $u->name, 'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D'])) !!},
+                    all: {!! json_encode($allMembers->map(fn($u) => ['username' => $u->username, 'name' => $u->name, 'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=E2E8F0&color=2A5C4D', 'is_online' => $u->isOnline()])) !!}
+                };
+            </script>
+            <div class="bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 mb-6"
+                 x-data="communitySidebar('{{ route('community.sidebar', $community) }}', window.communitySidebarData.online, window.communitySidebarData.all)">
+                
+                <!-- Online Members -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-[12px] font-bold text-gray-400 uppercase tracking-wider">Online</h4>
+                        <span class="px-2.5 py-0.5 rounded-full bg-green-50 text-green-600 text-[10px] font-black flex items-center justify-center shadow-sm" x-text="onlineMembers.length">0</span>
+                    </div>
+                    <div class="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
+                        <template x-for="u in onlineMembers" :key="u.username">
+                            <div class="flex items-center gap-2.5">
+                                <div class="relative w-8 h-8 shrink-0">
+                                    <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-100 bg-white">
+                                        <img :src="u.avatar_url" alt="" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
+                                </div>
+                                <p class="text-[13px] font-bold text-[#1E293B] truncate" x-text="'@' + u.username"></p>
+                            </div>
+                        </template>
+                        <div x-show="onlineMembers.length === 0" class="text-xs text-gray-400 italic py-1">
+                            No other members online.
+                        </div>
                     </div>
                 </div>
-                @endforeach
+                
+                <!-- All Community Members -->
+                <div>
+                    <h4 class="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3">Members</h4>
+                    <div class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+                        <template x-for="u in allMembers" :key="u.username">
+                            <div class="flex items-center gap-2.5">
+                                <div class="relative w-8 h-8 shrink-0">
+                                    <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-100 bg-white">
+                                        <img :src="u.avatar_url" alt="" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white"
+                                          :class="u.is_online ? 'bg-green-400' : 'bg-gray-300'"
+                                          :title="u.is_online ? 'Online' : 'Offline'"></span>
+                                </div>
+                                <p class="text-[13px] font-bold text-[#1E293B] truncate" x-text="'@' + u.username"></p>
+                            </div>
+                        </template>
+                        <div x-show="allMembers.length === 0" class="text-xs text-gray-400 italic py-1">
+                            No members yet.
+                        </div>
+                    </div>
+                </div>
+                
             </div>
-            @endif
-
-            {{-- Add Comment --}}
-            @if($isMember)
-            <form method="POST" action="{{ route('posts.comments.store', $post) }}" class="mt-3 flex gap-2">
-                @csrf
-                <input type="text" name="content" required placeholder="Add a comment..." class="form-input flex-1 py-2 text-sm">
-                <button type="submit" class="btn-ghost text-sm">Send</button>
-            </form>
-            @endif
         </div>
         
         <!-- Sticky Bottom Posting Widget -->
@@ -298,8 +386,8 @@
                 </div>
             </div>
         </div>
-        @endforelse
-        {{ $posts->links() }}
+        @endif
+        
     </div>
     
     <style>
@@ -655,6 +743,12 @@
                 new HashtagAC(el);
                 new MentionAC(el);
             });
+
+            // Edit post textareas: hashtag + mention
+            document.querySelectorAll('[id^="edit-post-content-"]').forEach(el => {
+                new HashtagAC(el);
+                new MentionAC(el);
+            });
         });
 
         // ── Insert helpers (used by @ / # buttons) ───────────────────────
@@ -687,6 +781,19 @@
             input.setSelectionRange(newPos, newPos);
             input.focus();
         }
+
+        // Show session error or validation error if present
+        @if($errors->any())
+            window.addEventListener('DOMContentLoaded', () => {
+                showCustomAlert('{{ $errors->first() }}', 'Peringatan');
+            });
+        @endif
+
+        @if(session('success'))
+            window.addEventListener('DOMContentLoaded', () => {
+                showCustomAlert('{{ session('success') }}', 'Berhasil');
+            });
+        @endif
     </script>
     @endpush
 </x-app-layout>
