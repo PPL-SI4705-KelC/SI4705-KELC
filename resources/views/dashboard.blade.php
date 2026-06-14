@@ -168,8 +168,8 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="text-[15px] font-bold text-gray-900">{{ number_format($player->xp) }} XP</p>
-                        <p class="text-[11px] font-bold text-[#2A5C4D] mt-0.5">+{{ rand(50, 150) }} this week</p>
+                        <p class="text-[15px] font-bold text-gray-900">{{ number_format($player->leaderboard?->monthly_xp ?? 0) }} XP</p>
+                        <p class="text-[11px] font-medium text-gray-400 mt-0.5">Monthly</p>
                     </div>
                     @if($rank === 1)
                     <div class="ml-4 text-xl shrink-0">👑</div>

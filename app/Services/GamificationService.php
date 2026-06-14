@@ -22,12 +22,9 @@ class GamificationService
             'description' => $description,
         ]);
 
-        // Update user XP
-        $user->increment('xp', $amount);
+        // Update user XP using LeaderboardService (updates users.xp AND user_leaderboards atomically)
+        app(LeaderboardService::class)->addRewardXP($user->id, $amount);
         $user->refresh();
-
-        // Check and apply level ups
-        $this->checkLevelUp($user);
     }
 
     /**
