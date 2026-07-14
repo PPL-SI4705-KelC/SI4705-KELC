@@ -17,12 +17,15 @@ class CommunitySeeder extends Seeder
             ['name' => 'Sustainable Food Hub', 'description' => 'Explore plant-based recipes, local farming, and sustainable food choices.'],
         ];
 
+        $admin = \App\Models\User::where('role', 'admin')->first() ?? \App\Models\User::first();
+        $createdBy = $admin ? $admin->id : 1;
+
         foreach ($communities as $c) {
             Community::create([
                 'name' => $c['name'],
                 'slug' => Str::slug($c['name']),
                 'description' => $c['description'],
-                'created_by' => 1,
+                'created_by' => $createdBy,
                 'is_active' => true,
             ]);
         }

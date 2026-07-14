@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -62,6 +63,51 @@ class User extends Authenticatable
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            if ($user->role === 'user') {
+                $user->leaderboard()->firstOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'total_xp' => $user->xp ?? 0,
+                        'monthly_xp' => $user->xp ?? 0,
+                    ]
+                );
+            }
+        });
+
+        static::updated(function ($user) {
+            if ($user->role === 'user' && $user->isDirty('xp')) {
+                $originalXp = $user->getOriginal('xp') ?? 0;
+                $newXp = $user->xp ?? 0;
+                $difference = $newXp - $originalXp;
+
+                if ($difference != 0) {
+                    $leaderboard = $user->leaderboard()->firstOrCreate(
+                        ['user_id' => $user->id],
+                        ['total_xp' => 0, 'monthly_xp' => 0]
+                    );
+
+                    $leaderboard->increment('total_xp', $difference);
+                    $leaderboard->increment('monthly_xp', $difference);
+
+                    // Also increment the history record for the current month
+                    $currentMonth = \Carbon\Carbon::now('Asia/Jakarta')->format('Y-m');
+                    $history = \App\Models\LeaderboardHistory::firstOrCreate(
+                        ['user_id' => $user->id, 'year_month' => $currentMonth],
+                        ['xp' => 0]
+                    );
+                    $history->increment('xp', $difference);
+                }
+
+            }
+        });
     }
 
     // ── Role Helpers ─────────────────────────────────────────
@@ -155,4 +201,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class)->where('is_read', false);
     }
+
+    public function leaderboard(): HasOne
+    {
+        return $this->hasOne(UserLeaderboard::class);
+    }
+
+    public function leaderboardHistories(): HasMany
+    {
+        return $this->hasMany(LeaderboardHistory::class);
+    }
 }
+

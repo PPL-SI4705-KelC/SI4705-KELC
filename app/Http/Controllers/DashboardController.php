@@ -6,6 +6,7 @@ use App\Models\Emission;
 use App\Models\Blog;
 use App\Models\QuizAttempt;
 use App\Services\GamificationService;
+use App\Services\LeaderboardService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,11 +14,13 @@ use Illuminate\Support\Facades\Auth;
 class DashboardController extends Controller
 {
     public function __construct(
-        private GamificationService $gamificationService
+        private GamificationService $gamificationService,
+        private LeaderboardService $leaderboardService
     ) {}
 
     public function index()
     {
+        $this->leaderboardService->syncMissing();
         $user = Auth::user();
 
         // Latest emission
@@ -62,11 +65,21 @@ class DashboardController extends Controller
         $energyEmission = $user->emissions()->sum('energy_emission');
         $foodEmission = $user->emissions()->sum('consumption_emission');
 
-        // Get all user IDs sorted by XP desc, id asc to determine globally unique sequential ranks
-        $sortedUserIds = \App\Models\User::where('role', 'user')
-            ->orderByDesc('xp')
-            ->orderBy('id', 'asc')
-            ->pluck('id')
+        // Ensure current user has leaderboard record
+        if ($user && $user->role === 'user' && !$user->leaderboard) {
+            $user->leaderboard()->create([
+                'total_xp' => $user->xp ?? 0,
+                'monthly_xp' => $user->xp ?? 0,
+            ]);
+            $user->load('leaderboard');
+        }
+
+        // Get all user IDs sorted by monthly XP desc, id asc to determine globally unique sequential ranks
+        $sortedUserIds = \App\Models\User::where('users.role', 'user')
+            ->join('user_leaderboards', 'users.id', '=', 'user_leaderboards.user_id')
+            ->orderByDesc('user_leaderboards.monthly_xp')
+            ->orderBy('users.id', 'asc')
+            ->pluck('users.id')
             ->toArray();
 
         // Assign rank to the current user
@@ -74,10 +87,12 @@ class DashboardController extends Controller
             ? array_search($user->id, $sortedUserIds) + 1 
             : 1;
 
-        // Leaderboard by XP (only users)
-        $leaderboard = \App\Models\User::where('role', 'user')
-            ->orderByDesc('xp')
-            ->orderBy('id', 'asc')
+        // Leaderboard by monthly XP (only users)
+        $leaderboard = \App\Models\User::where('users.role', 'user')
+            ->select('users.*')
+            ->join('user_leaderboards', 'users.id', '=', 'user_leaderboards.user_id')
+            ->orderByDesc('user_leaderboards.monthly_xp')
+            ->orderBy('users.id', 'asc')
             ->limit(8)
             ->get();
 
@@ -90,6 +105,7 @@ class DashboardController extends Controller
             $player->rank = array_search($player->id, $sortedUserIds) !== false 
                 ? array_search($player->id, $sortedUserIds) + 1 
                 : 1;
+            $player->load('leaderboard');
         }
 
         // Sort leaderboard by rank to ensure sequential rendering order
@@ -130,39 +146,66 @@ class DashboardController extends Controller
         ));
     }
 
-    /**
-     * User Leaderboard page.
-     */
     public function leaderboard(Request $request)
     {
+        $this->leaderboardService->syncMissing();
         $user = Auth::user();
-        $query = \App\Models\User::where('role', 'user');
+        $filter = $request->query('filter', 'monthly');
+
+        // Ensure current user has leaderboard record
+        if ($user && $user->role === 'user' && !$user->leaderboard) {
+            $user->leaderboard()->create([
+                'total_xp' => $user->xp ?? 0,
+                'monthly_xp' => $user->xp ?? 0,
+            ]);
+            $user->load('leaderboard');
+        }
+
+        // Base query joining user_leaderboards
+        $query = \App\Models\User::where('users.role', 'user')
+            ->select('users.*')
+            ->join('user_leaderboards', 'users.id', '=', 'user_leaderboards.user_id');
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%");
+                $q->where('users.name', 'like', "%{$search}%")
+                  ->orWhere('users.username', 'like', "%{$search}%");
             });
         }
 
-        $users = $query->orderByDesc('xp')
-            ->orderBy('id', 'asc')
-            ->paginate(20)
-            ->withQueryString();
+        // Sort based on filter
+        if ($filter === 'alltime') {
+            $query->orderByDesc('user_leaderboards.total_xp')
+                  ->orderBy('users.id', 'asc');
+        } else {
+            // Default to monthly
+            $query->orderByDesc('user_leaderboards.monthly_xp')
+                  ->orderBy('users.id', 'asc');
+        }
 
-        // Get all user IDs sorted by XP desc, id asc to determine globally unique sequential ranks
-        $sortedUserIds = \App\Models\User::where('role', 'user')
-            ->orderByDesc('xp')
-            ->orderBy('id', 'asc')
-            ->pluck('id')
-            ->toArray();
+        $users = $query->paginate(20)->withQueryString();
 
-        // Attach global rank to each user in the paginated collection using the sorted array index
+        // Get all user IDs sorted in the same way to calculate rank
+        $rankQuery = \App\Models\User::where('users.role', 'user')
+            ->join('user_leaderboards', 'users.id', '=', 'user_leaderboards.user_id');
+            
+        if ($filter === 'alltime') {
+            $rankQuery->orderByDesc('user_leaderboards.total_xp')
+                      ->orderBy('users.id', 'asc');
+        } else {
+            $rankQuery->orderByDesc('user_leaderboards.monthly_xp')
+                      ->orderBy('users.id', 'asc');
+        }
+        
+        $sortedUserIds = $rankQuery->pluck('users.id')->toArray();
+
+        // Attach global rank to each user in the paginated collection
         $users->through(function ($player) use ($sortedUserIds) {
             $player->rank = array_search($player->id, $sortedUserIds) !== false 
                 ? array_search($player->id, $sortedUserIds) + 1 
                 : 1;
+            $player->load('leaderboard');
             return $player;
         });
 
@@ -171,6 +214,6 @@ class DashboardController extends Controller
             ? array_search($user->id, $sortedUserIds) + 1 
             : 1;
 
-        return view('leaderboard', compact('users', 'user'));
+        return view('leaderboard', compact('users', 'user', 'filter'));
     }
 }

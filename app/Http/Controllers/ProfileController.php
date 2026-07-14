@@ -39,7 +39,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('dashboard')->with('success', 'Perubahan profile berhasil disimpan');
+        return Redirect::route('profile.edit')->with('success', 'Perubahan profile berhasil disimpan');
     }
 
     /**

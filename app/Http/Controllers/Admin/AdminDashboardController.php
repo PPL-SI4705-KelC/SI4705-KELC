@@ -302,27 +302,51 @@ class AdminDashboardController extends Controller
     /**
      * Leaderboard management view.
      */
-    public function leaderboard()
+    public function leaderboard(Request $request)
     {
-        $sortedUserIds = User::where('role', 'user')
-            ->orderByDesc('xp')
-            ->orderBy('id', 'asc')
-            ->pluck('id')
-            ->toArray();
+        app(\App\Services\LeaderboardService::class)->syncMissing();
+        $filter = $request->query('filter', 'monthly');
 
-        $leaderboard = User::where('role', 'user')
-            ->orderByDesc('xp')
-            ->orderBy('id', 'asc')
-            ->limit(50)
-            ->get();
+        // Base query joining user_leaderboards
+        $query = User::where('users.role', 'user')
+            ->select('users.*')
+            ->join('user_leaderboards', 'users.id', '=', 'user_leaderboards.user_id');
 
+        // Sort based on filter
+        if ($filter === 'alltime') {
+            $query->orderByDesc('user_leaderboards.total_xp')
+                  ->orderBy('users.id', 'asc');
+        } else {
+            // Default to monthly
+            $query->orderByDesc('user_leaderboards.monthly_xp')
+                  ->orderBy('users.id', 'asc');
+        }
+
+        $leaderboard = $query->limit(50)->get();
+
+        // Get all user IDs sorted in the same way to calculate rank
+        $rankQuery = User::where('users.role', 'user')
+            ->join('user_leaderboards', 'users.id', '=', 'user_leaderboards.user_id');
+            
+        if ($filter === 'alltime') {
+            $rankQuery->orderByDesc('user_leaderboards.total_xp')
+                      ->orderBy('users.id', 'asc');
+        } else {
+            $rankQuery->orderByDesc('user_leaderboards.monthly_xp')
+                      ->orderBy('users.id', 'asc');
+        }
+        
+        $sortedUserIds = $rankQuery->pluck('users.id')->toArray();
+
+        // Attach global rank to each user
         foreach ($leaderboard as $player) {
             $player->rank = array_search($player->id, $sortedUserIds) !== false 
                 ? array_search($player->id, $sortedUserIds) + 1 
                 : 1;
+            $player->load('leaderboard');
         }
 
-        return view('admin.leaderboard', compact('leaderboard'));
+        return view('admin.leaderboard', compact('leaderboard', 'filter'));
     }
 
     /**
